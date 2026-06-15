@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { registerUser } from "../api/userApi.js";
+import { registerUser } from "../../api/userApi.js";
 
 export default function Register() {
     const navigate = useNavigate();

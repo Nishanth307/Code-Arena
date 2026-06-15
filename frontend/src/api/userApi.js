@@ -1,5 +1,5 @@
-import axios from "axios";
 import settings from "../config/settings";
+import axiosInstance from "./axiosInstance";
 
 const BASE = `${settings.BASE_URL}/api/auth`;
 export const loginUser = async(email,password) => {
@@ -28,3 +28,11 @@ export const registerUser = async (firstName, lastName, email, password) => {
     if (!res.ok) throw new Error(data.message || "Registration failed");
     return data; 
 };
+
+// check
+export const logoutUser = async (logoutData) => {
+    const res = axiosInstance.post(
+        "user/logout",
+    );
+    return res.data;
+}

@@ -1,4 +1,5 @@
 const Submission = require("../model/submission");
+const { sendSubmissionJob } = require("../services/kafka/producer");
 
 const getSubmissions = async (req, res) => {
     try {
@@ -42,6 +43,15 @@ const getSubmissionById = async (req, res) => {
 const createSubmission = async (req, res) => {
     try {
         const submission = await Submission.create(req.body);
+        
+        // Enqueue the evaluation job to Kafka
+        await sendSubmissionJob({
+            submissionId: submission._id,
+            language: submission.language,
+            code: req.body.code || "",
+            input: req.body.input || ""
+        });
+
         return res.status(201).json({
             success: true,
             message: "Submission created successfully",

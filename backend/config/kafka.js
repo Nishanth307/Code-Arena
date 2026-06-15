@@ -1,8 +1,9 @@
-const kafkaafka = require("kafkajs");
+const { Kafka } = require("kafkajs");
+const settings = require("./settings");
 
 const kafka = new Kafka({
-    clientId: "online-judge",
-    brokers: ["localhost:9092"],
-})
+  clientId: "online-judge",
+  brokers: [settings.KAFKA_BROKER || "localhost:9092"],
+});
 
 module.exports = kafka;

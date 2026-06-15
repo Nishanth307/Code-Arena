@@ -3,7 +3,7 @@ const consumer = kafka.consumer({
     groupId: "judge-consumer",
 });
 
-const connectConsumer = async()=>{
+const connectConsumer = async () => {
     await consumer.connect();
 
     await consumer.subscribe({
@@ -11,17 +11,7 @@ const connectConsumer = async()=>{
         fromBeginning: true
     });
 
-    await consumer.run({
-        eachMessage: async ({topic,partition,message})=>{
-            const payload = JSON.parse(
-                message.value.toString()
-            );
-
-            const { submissionId } = payload;
-
-            console.log(`Processing submission :${submissionId}`);
-        }
-    });
+    return consumer;
 }
 
 module.exports = {
