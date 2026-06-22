@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { loginUser } from "../../api/userApi.js";
-import { useNavigate, Link } from "react-router-dom";
+import { createSubmission } from "../../api/submissionApi.js";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [form, setForm] = useState({ email: "", password: "" });
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const infoMessage = location.state?.message;
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,8 +23,31 @@ export default function Login() {
 
         try {
             const data = await loginUser(form.email, form.password);
-            // TODO(security): Token is stored securely in an HttpOnly cookie. Store only non-sensitive user info in localStorage.
+            
+            // Save user info
             localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // Check for pending submission saved before redirecting
+            const pending = localStorage.getItem("pending_submission");
+            if (pending) {
+                try {
+                    const { problemId, language, code } = JSON.parse(pending);
+                    
+                    // The token is now in localStorage, so request interceptor will send it
+                    const response = await createSubmission({ problemId, language, code });
+                    const sub = response.submission || response.data?.submission || response.data;
+                    const submissionId = sub?._id || response.submissionId;
+                    
+                    if (submissionId) {
+                        localStorage.setItem("last_submission_id", submissionId);
+                    }
+                } catch (err) {
+                    console.error("Failed to process pending submission post-login:", err);
+                } finally {
+                    localStorage.removeItem("pending_submission");
+                }
+            }
+
             navigate("/dashboard");
         } catch (err) {
             setError(err.message);
@@ -30,9 +57,24 @@ export default function Login() {
     };
 
     return (
-        <div className="auth-container">
+        <div style={{ maxWidth: "400px", margin: "4rem auto", padding: "2rem", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#fff" }}>
             <h2>Sign In</h2>
-            <form onSubmit={handleSubmit}>
+            
+            {infoMessage && (
+                <div style={{ 
+                    padding: "0.8rem", 
+                    backgroundColor: "#e8f4fd", 
+                    color: "#0c5460", 
+                    border: "1px solid #bee5eb", 
+                    borderRadius: "4px", 
+                    marginBottom: "1rem",
+                    fontSize: "0.9rem"
+                }}>
+                    {infoMessage}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <input
                     type="email"
                     name="email"
@@ -40,6 +82,7 @@ export default function Login() {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    style={{ padding: "0.6rem", borderRadius: "4px", border: "1px solid #ccc" }}
                 />
                 <input
                     type="password"
@@ -48,14 +91,29 @@ export default function Login() {
                     value={form.password}
                     onChange={handleChange}
                     required
+                    style={{ padding: "0.6rem", borderRadius: "4px", border: "1px solid #ccc" }}
                 />
 
-                {error && <p className="error">{error}</p>}
-                <button type="submit" disabled={loading}>
+                {error && <p style={{ color: "red", margin: 0 }}>{error}</p>}
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{
+                        padding: "0.7rem",
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "4px",
+                        fontWeight: "bold",
+                        cursor: loading ? "not-allowed" : "pointer"
+                    }}
+                >
                     {loading ? "Signing in..." : "Sign In"}
                 </button>
             </form>
-            <p>Don't have an account? <Link to="/register">Register</Link></p>
+            <p style={{ marginTop: "1rem" }}>
+                Don't have an account? <Link to="/register" style={{ color: "#007bff" }}>Register</Link>
+            </p>
         </div>
-    )
+    );
 }

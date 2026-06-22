@@ -28,50 +28,50 @@ function ContestList() {
             console.error(error);
         }
     };
-};
 
-if (loading) {
-    return <h2>Loading...</h2>;
+    if (loading) {
+        return <h2>Loading...</h2>;
+    }
+
+    return (
+        <div>
+            <h1>Contests</h1>
+
+            <Link to="/contests/create">
+                Create Contest
+            </Link>
+
+            {contests.map((contest) => (
+                <div key={contest._id}>
+                    <h3>{contest.title}</h3>
+
+                    <p>{contest.description}</p>
+
+                    <p>Status: {contest.status}</p>
+
+                    <Link to={`/contests/${contest._id}`}>
+                        View
+                    </Link>
+
+                    {" | "}
+
+                    <Link to={`/contests/edit/${contest._id}`}>
+                        Edit
+                    </Link>
+
+                    {" | "}
+
+                    <button
+                        onClick={() =>
+                            handleDelete(contest._id)
+                        }
+                    >
+                        Delete
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
 }
-
-return (
-    <div>
-        <h1>Contests</h1>
-
-        <Link to="/contests/create">
-            Create Contest
-        </Link>
-
-        {contests.map((contest) => (
-            <div key={contest._id}>
-                <h3>{contest.title}</h3>
-
-                <p>{contest.description}</p>
-
-                <p>Status: {contest.status}</p>
-
-                <Link to={`/contests/${contest._id}`}>
-                    View
-                </Link>
-
-                {" | "}
-
-                <Link to={`/contests/edit/${contest._id}`}>
-                    Edit
-                </Link>
-
-                {" | "}
-
-                <button
-                    onClick={() =>
-                        handleDelete(contest._id)
-                    }
-                >
-                    Delete
-                </button>
-            </div>
-        ))}
-    </div>
-);
 
 export default ContestList;

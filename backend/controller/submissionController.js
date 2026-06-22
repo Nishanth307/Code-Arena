@@ -42,6 +42,12 @@ const getSubmissionById = async (req, res) => {
 
 const createSubmission = async (req, res) => {
     try {
+        req.body.userId = req.userId;
+        
+        // Ensure codeFilePath is populated for schema compliance
+        const extension = req.body.language === "cpp" ? "cpp" : req.body.language === "java" ? "java" : req.body.language === "javascript" ? "js" : "py";
+        req.body.codeFilePath = req.body.codeFilePath || `submissions/${Date.now()}_${req.userId || "guest"}.${extension}`;
+
         const submission = await Submission.create(req.body);
         
         // Enqueue the evaluation job to Kafka

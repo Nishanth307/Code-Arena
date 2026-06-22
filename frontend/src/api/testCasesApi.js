@@ -1,11 +1,11 @@
 import axiosInstance from "./axiosInstance";
 import settings from "../config/settings";
 
-const BASE = `${settings.BASE_URL}/api/testcases`;
+const BASE = `${settings.BASE_URL}/api/testCase`;
 
 export const createTestCase = async (testCaseData) => {
     const response = await axiosInstance.post(
-        `${BASE}/create`,
+        `${BASE}/`,
         testCaseData
     )
     return response.data;

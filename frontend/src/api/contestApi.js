@@ -10,7 +10,7 @@ export const getContests = async () => {
 
 export const getContestById = async (id) => {
     const response = await axiosInstance.get(`${BASE}/${id}`);
-    return response.date;
+    return response.data;
 }
 
 export const createContest = async (contestData) => {
@@ -23,15 +23,15 @@ export const createContest = async (contestData) => {
 
 export const updateContest = async (id, contestData) => {
     const response = await axiosInstance.put(
-        `${BASE}/${id}`,
+        `${BASE}/update/${id}`,
         contestData
     );
-    return response.date;
+    return response.data;
 }
 
 export const deleteContest = async (id) => {
     const response = await axiosInstance.delete(
-        `${BASE}/${id}`
+        `${BASE}/delete/${id}`
     );
     return response.data;
 }

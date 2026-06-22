@@ -2,6 +2,14 @@ import { Routes, Route } from "react-router-dom";
 import ContestList from "../pages/contest/ContestList";
 import ContestDetails from "../pages/contest/ContestDetails";
 import EditContest from "../pages/contest/EditContest";
+import CreateContest from "../pages/contest/CreateContest";
+import ProblemDetails from "../pages/problem/ProblemDetails";
+import ProblemList from "../pages/problem/ProblemList";
+import CreateProblem from "../pages/problem/CreateProblem";
+import EditProblem from "../pages/problem/EditProblem";
+import SubmissionList from "../pages/submission/SubmissionList";
+import SubmissionDetails from "../pages/submission/SubmissionDetails";
+import SubmitSolution from "../pages/submission/SubmitSoultion";
 
 
 function AppRoutes() {

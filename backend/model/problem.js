@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const problemSchema = new mongoose.Schema({
     title: { type: String, required: [true, "Title is required"], trim: true },
     statement: { type: String, required: [true, "Statement is required"] },
-    difficuty: { type: String, enum: ["EASY", "MEDIUM", "HARD"], required: [true, "Difficulty is required"] },
+    difficulty: { type: String, enum: ["EASY", "MEDIUM", "HARD"], required: [true, "Difficulty is required"] },
     timeLimitMillis: { type: Number, required: [true, "Time limit is required"] },
     memoryLimitMBs: { type: Number, required: [true, "Memory limit is required"] },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProblems, deleteProblem } from "../../api/problemApi";
-import { response } from "express";
 
 function ProblemList() {
-    const [problems, setProblem] = useState([]);
+    const [problems, setProblems] = useState([]);
     const [loading, setloading] = useState(true);
 
     useEffect(() => {
@@ -14,8 +13,7 @@ function ProblemList() {
     const fetchProblems = async () => {
         try {
             const response = await getProblems();
-            setProblems(response.data ? data : response);
-
+            setProblems(response.problems || []);
         } catch (error) {
             console.error(error);
         } finally {
@@ -29,7 +27,7 @@ function ProblemList() {
             return;
         }
         try {
-            deleteProblem(id);
+            await deleteProblem(id);
             fetchProblems();
         } catch (error) {
             console.error(error);

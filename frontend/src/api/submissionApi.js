@@ -9,13 +9,13 @@ export const getSubmissions = async () => {
 }
 
 export const getSubmissionById = async (id) => {
-    const response = await axiosInstance.get(`${BASE}/id`);
+    const response = await axiosInstance.get(`${BASE}/${id}`);
     return response.data;
 }
 
 export const createSubmission = async (submissionData) => {
     const response = await axiosInstance.post(
-        `${BASE}/create`,
+        `${BASE}/submit`,
         submissionData
     );
     return response.data;

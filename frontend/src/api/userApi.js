@@ -1,7 +1,8 @@
 import settings from "../config/settings";
 import axiosInstance from "./axiosInstance";
 
-const BASE = `${settings.BASE_URL}/api/auth`;
+const BASE = `${settings.BASE_URL}/api/user`;
+
 export const loginUser = async(email,password) => {
     const res = await fetch(`${BASE}/login`,{
         method: "POST",
@@ -13,6 +14,11 @@ export const loginUser = async(email,password) => {
     const data = await res.json();
 
     if (!res.ok) throw new Error(data.message || "Login failed");
+    
+    // Save token for Axios request interceptor
+    if (data.token) {
+        localStorage.setItem("token", data.token);
+    }
     return data;
 };
 
@@ -31,7 +37,7 @@ export const registerUser = async (firstName, lastName, email, password) => {
 
 // check
 export const logoutUser = async (logoutData) => {
-    const res = axiosInstance.post(
+    const res = await axiosInstance.post(
         "user/logout",
     );
     return res.data;

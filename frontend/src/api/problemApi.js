@@ -10,7 +10,7 @@ export const getProblems = async () => {
 
 export const getProblemById = async (id) => {
     const response = await axiosInstance.get(`${BASE}/${id}`);
-    return response.date;
+    return response.data;
 }
 
 export const createProblem = async (ProblemData) => {
@@ -21,15 +21,15 @@ export const createProblem = async (ProblemData) => {
     return response.data;
 }
 
-export const updateProblem = async () => {
+export const updateProblem = async (id, ProblemData) => {
     const response = await axiosInstance.put(
         `${BASE}/update/${id}`,
         ProblemData
     );
-    return response.date;
+    return response.data;
 }
 
-export const deleteProblem = async () => {
+export const deleteProblem = async (id) => {
     const response = await axiosInstance.delete(
         `${BASE}/delete/${id}`
     );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createContest } from "../../api/contestApi";
 
-function createContest() {
+function CreateContest() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -36,25 +36,25 @@ function createContest() {
             <input
                 name="title"
                 placeholder="Title"
-                onchange={handleChange}
+                onChange={handleChange}
             />
-            <textArea
+            <textarea
                 name="description"
                 placeholder="Description"
-                onchange={handleChange}
+                onChange={handleChange}
             />
             <input
                 type="datetime-local"
                 name="startTime"
                 placeholder="start time"
-                onchange={handleChange}
+                onChange={handleChange}
             />
 
             <input
                 type="datetime-local"
                 name="endTime"
                 placeholder="End time"
-                onchange={handleChange}
+                onChange={handleChange}
             />
 
             <button type="submit">

@@ -1,0 +1,5 @@
+const settings = {
+    BASE_URL: "http://localhost:5000",
+    VITE_API_URL: "http://localhost:5000/api"
+};
+export default settings;
