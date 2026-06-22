@@ -13,8 +13,39 @@ const { connectProducer } = require("./services/kafka/producer");
 
 const app = express();
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000"
+];
+
+if (settings.BASE_URL) {
+    const cleaned = settings.BASE_URL.replace(/['"]/g, "").trim();
+    allowedOrigins.push(cleaned);
+}
+if (settings.FRONTEND_PORT) {
+    const port = String(settings.FRONTEND_PORT).replace(/['"]/g, "").trim();
+    allowedOrigins.push(`http://localhost:${port}`);
+    allowedOrigins.push(`http://127.0.0.1:${port}`);
+}
+
 app.use(cors({
-    origin: settings.BASE_URL,
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.trim();
+        const isLocalhost = cleanOrigin.startsWith("http://localhost:") || 
+                            cleanOrigin.startsWith("http://127.0.0.1:") ||
+                            cleanOrigin.startsWith("https://localhost:") ||
+                            cleanOrigin.startsWith("https://127.0.0.1:");
+        
+        if (allowedOrigins.includes(cleanOrigin) || isLocalhost || settings.NODE_ENV === "development") {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true
 }));
 

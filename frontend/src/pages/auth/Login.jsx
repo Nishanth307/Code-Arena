@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { loginUser } from "../../api/userApi.js";
 import { createSubmission } from "../../api/submissionApi.js";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import AuthContext from "../../context/AuthContext.jsx";
 
 export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { fetchCurrentUser } = useContext(AuthContext);
     const [form, setForm] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -26,6 +28,9 @@ export default function Login() {
             
             // Save user info
             localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // Fetch current user details into global AuthContext
+            await fetchCurrentUser();
             
             // Check for pending submission saved before redirecting
             const pending = localStorage.getItem("pending_submission");

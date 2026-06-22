@@ -8,12 +8,20 @@ const AuthUtil = require("../utils/authUtil");
  */
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password, role } = req.body;
 
         if (!(firstName && lastName && email && password)) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
+            });
+        }
+
+        // Validate role if provided
+        if (role && !["USER", "ADMIN"].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid role specified"
             });
         }
 
@@ -34,13 +42,15 @@ const registerUser = async (req, res) => {
             firstName: firstName,
             lastName: lastName,
             email: email.toLowerCase(),
-            password: hashedPassword
+            password: hashedPassword,
+            role: role || "USER"
         });
 
         // generate tokens 
         const accessToken = await AuthUtil.generateToken({
             _id: newUser._id,
-            email: newUser.email
+            email: newUser.email,
+            role: newUser.role
         });
 
         const userResponse = {
@@ -48,6 +58,7 @@ const registerUser = async (req, res) => {
             firstName: newUser.firstName,
             lastName: newUser.lastName,
             email: newUser.email,
+            role: newUser.role
         };
 
         // Set HttpOnly cookie for the authentication token
@@ -122,14 +133,16 @@ const loginUser = async (req, res) => {
 
         const accessToken = await AuthUtil.generateToken({
             _id: user._id,
-            email: user.email
+            email: user.email,
+            role: user.role
         });
 
         const userResponse = {
             _id: user._id,
             firstName: user.firstName,
             lastName: user.lastName,
-            email: user.email
+            email: user.email,
+            role: user.role
         };
 
         // Set HttpOnly cookie for the authentication token

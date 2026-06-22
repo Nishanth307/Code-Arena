@@ -3,7 +3,13 @@ const { sendSubmissionJob } = require("../services/kafka/producer");
 
 const getSubmissions = async (req, res) => {
     try {
-        const submissions = await Submission.find();
+        const filter = {};
+        if (req.query.userId) {
+            filter.userId = req.query.userId;
+        }
+        const submissions = await Submission.find(filter)
+            .populate("problemId", "title")
+            .sort({ submittedAt: -1 });
         return res.status(200).json({
             success: true,
             message: "Submissions fetched successfully",

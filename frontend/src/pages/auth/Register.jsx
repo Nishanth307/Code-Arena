@@ -5,7 +5,7 @@ import { registerUser } from "../../api/userApi.js";
 export default function Register() {
     const navigate = useNavigate();
     const [form, setForm] = useState({
-        firstName: "", lastName: "", email: "", password: "", confirm: "",
+        firstName: "", lastName: "", email: "", password: "", confirm: "", role: "USER"
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function Register() {
         }
         setLoading(true);
         try {
-            await registerUser(form.firstName, form.lastName, form.email, form.password);
+            await registerUser(form.firstName, form.lastName, form.email, form.password, form.role);
             navigate("/login");
         } catch (err) {
             setError(err.message);
@@ -77,6 +77,20 @@ export default function Register() {
                     required
                     type="password"
                 />
+
+                <div className="form-group" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", textAlign: "left" }}>
+                    <label style={{ fontWeight: "600", fontSize: "0.9rem", color: "var(--text)" }}>Select Role:</label>
+                    <select
+                        name="role"
+                        value={form.role}
+                        onChange={handleChange}
+                        required
+                        style={{ padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)" }}
+                    >
+                        <option value="USER">USER (Participant)</option>
+                        <option value="ADMIN">ADMIN (Organizer)</option>
+                    </select>
+                </div>
 
                 {error && <p className="error">{error}</p>}
                 <button type="submit" disabled={loading}>

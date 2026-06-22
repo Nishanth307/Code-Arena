@@ -3,8 +3,8 @@ import settings from "../config/settings";
 
 const BASE = `${settings.BASE_URL}/api/submission`;
 
-export const getSubmissions = async () => {
-    const response = await axiosInstance.get(`${BASE}/`);
+export const getSubmissions = async (params) => {
+    const response = await axiosInstance.get(`${BASE}/`, { params });
     return response.data;
 }
 
