@@ -168,9 +168,51 @@ function ProblemDetails() {
                 {/* Left Pane: Problem Description */}
                 <div className="workspace-left" style={{ flex: 1, minWidth: 0, backgroundColor: "var(--bg)", border: "1px solid var(--border)", borderRadius: "8px", padding: "1.25rem", overflowY: "auto", display: "flex", flexDirection: "column", gap: "1.5rem", textAlign: "left", boxShadow: "var(--shadow)" }}>
                     <div>
-                        <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Problem Statement</h3>
+                        <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Problem Description</h3>
                         <p style={{ whiteSpace: "pre-wrap", color: "var(--text-h)", fontSize: "0.95rem", lineHeight: "1.6" }}>{problem.statement}</p>
                     </div>
+
+                    {problem.inputFormat && (
+                        <div>
+                            <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Input Format</h3>
+                            <p style={{ whiteSpace: "pre-wrap", color: "var(--text-h)", fontSize: "0.95rem", lineHeight: "1.6" }}>{problem.inputFormat}</p>
+                        </div>
+                    )}
+
+                    {problem.outputFormat && (
+                        <div>
+                            <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Output Format</h3>
+                            <p style={{ whiteSpace: "pre-wrap", color: "var(--text-h)", fontSize: "0.95rem", lineHeight: "1.6" }}>{problem.outputFormat}</p>
+                        </div>
+                    )}
+
+                    {/* Examples Section */}
+                    {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
+                        <div>
+                            <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Sample Examples</h3>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                {problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
+                                    <div key={idx} style={{ padding: "1rem", backgroundColor: "var(--code-bg)", borderRadius: "6px", border: "1px solid var(--border)" }}>
+                                        <div style={{ fontWeight: "600", marginBottom: "0.5rem", color: "var(--text-h)", fontSize: "0.9rem" }}>Example {idx + 1}</div>
+                                        <div style={{ marginBottom: "0.5rem" }}>
+                                            <span style={{ fontWeight: "500", fontSize: "0.85rem", display: "block", color: "var(--text)" }}>Input:</span>
+                                            <pre style={{ margin: "0.2rem 0", padding: "0.5rem", backgroundColor: "var(--bg)", border: "1px solid var(--border)", borderRadius: "4px", fontFamily: "var(--mono)", fontSize: "0.85rem", overflowX: "auto", color: "var(--text-h)" }}>{tc.input}</pre>
+                                        </div>
+                                        <div style={{ marginBottom: "0.5rem" }}>
+                                            <span style={{ fontWeight: "500", fontSize: "0.85rem", display: "block", color: "var(--text)" }}>Expected Output:</span>
+                                            <pre style={{ margin: "0.2rem 0", padding: "0.5rem", backgroundColor: "var(--bg)", border: "1px solid var(--border)", borderRadius: "4px", fontFamily: "var(--mono)", fontSize: "0.85rem", overflowX: "auto", color: "var(--text-h)" }}>{tc.expectedOutput}</pre>
+                                        </div>
+                                        {tc.explanation && (
+                                            <div>
+                                                <span style={{ fontWeight: "500", fontSize: "0.85rem", display: "block", color: "var(--text)" }}>Explanation:</span>
+                                                <p style={{ margin: "0.2rem 0", fontSize: "0.9rem", color: "var(--text)", fontStyle: "italic" }}>{tc.explanation}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Pane: Code Editor and Compiler Runner */}

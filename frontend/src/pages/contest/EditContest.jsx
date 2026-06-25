@@ -31,10 +31,15 @@ function EditContest() {
     const [newProblem, setNewProblem] = useState({
         title: "",
         statement: "",
+        inputFormat: "",
+        outputFormat: "",
         difficulty: "EASY",
         timeLimitMillis: 1000,
         memoryLimitMBs: 256
     });
+    const [inlineTestCases, setInlineTestCases] = useState([
+        { input: "", expectedOutput: "", explanation: "", isHidden: false }
+    ]);
 
     useEffect(() => {
         loadContestAndProblems();
@@ -100,6 +105,20 @@ function EditContest() {
         }
     };
 
+    const handleAddInlineTestCase = () => {
+        setInlineTestCases([...inlineTestCases, { input: "", expectedOutput: "", explanation: "", isHidden: false }]);
+    };
+
+    const handleRemoveInlineTestCase = (index) => {
+        setInlineTestCases(inlineTestCases.filter((_, i) => i !== index));
+    };
+
+    const handleInlineTestCaseChange = (index, field, value) => {
+        const updated = [...inlineTestCases];
+        updated[index][field] = value;
+        setInlineTestCases(updated);
+    };
+
     const handleInlineCreateProblem = async () => {
         if (!newProblem.title || !newProblem.statement) {
             setInlineError("Title and Statement are required.");
@@ -108,7 +127,10 @@ function EditContest() {
         setInlineError("");
         setInlineLoading(true);
         try {
-            const response = await createProblem(newProblem);
+            const response = await createProblem({
+                ...newProblem,
+                testCases: inlineTestCases
+            });
             const created = response.problem || response;
             
             // Add to list of all problems and select it
@@ -119,10 +141,15 @@ function EditContest() {
             setNewProblem({
                 title: "",
                 statement: "",
+                inputFormat: "",
+                outputFormat: "",
                 difficulty: "EASY",
                 timeLimitMillis: 1000,
                 memoryLimitMBs: 256
             });
+            setInlineTestCases([
+                { input: "", expectedOutput: "", explanation: "", isHidden: false }
+            ]);
             setShowInlineCreate(false);
         } catch (err) {
             console.error("Error creating problem inline:", err);
@@ -270,7 +297,29 @@ function EditContest() {
                                     rows={4}
                                     value={newProblem.statement}
                                     onChange={(e) => setNewProblem({ ...newProblem, statement: e.target.value })}
-                                    placeholder="Describe problem statement, input/output formats, and sample cases..."
+                                    placeholder="Describe problem statement, constraints..."
+                                    style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
+                                />
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                                <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-h)" }}>Input Format</label>
+                                <textarea
+                                    rows={2}
+                                    value={newProblem.inputFormat}
+                                    onChange={(e) => setNewProblem({ ...newProblem, inputFormat: e.target.value })}
+                                    placeholder="Describe expected input format..."
+                                    style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
+                                />
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                                <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-h)" }}>Output Format</label>
+                                <textarea
+                                    rows={2}
+                                    value={newProblem.outputFormat}
+                                    onChange={(e) => setNewProblem({ ...newProblem, outputFormat: e.target.value })}
+                                    placeholder="Describe expected output format..."
                                     style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
                                 />
                             </div>
@@ -310,6 +359,81 @@ function EditContest() {
                                         style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)" }}
                                     />
                                 </div>
+                            </div>
+
+                            {/* Inline Test Cases Section */}
+                            <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem", marginTop: "0.5rem", textAlign: "left" }}>
+                                <label style={{ fontWeight: "700", color: "var(--text-h)", fontSize: "0.95rem" }}>Test Cases</label>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", marginTop: "0.5rem" }}>
+                                    {inlineTestCases.map((tc, idx) => (
+                                        <div key={idx} style={{ border: "1px solid var(--border)", borderRadius: "6px", padding: "0.8rem", backgroundColor: "var(--bg)" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                                                <span style={{ fontWeight: "600", fontSize: "0.85rem", color: "var(--text-h)" }}>Test Case #{idx + 1}</span>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+                                                    <label style={{ display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.75rem", cursor: "pointer", color: "var(--text)" }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={tc.isHidden}
+                                                            onChange={(e) => handleInlineTestCaseChange(idx, "isHidden", e.target.checked)}
+                                                            style={{ cursor: "pointer" }}
+                                                        />
+                                                        Is Hidden?
+                                                    </label>
+                                                    {inlineTestCases.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveInlineTestCase(idx)}
+                                                            style={{ padding: "0.25rem 0.5rem", border: "1px solid #dc3545", color: "#dc3545", backgroundColor: "transparent", borderRadius: "4px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer" }}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                                                <div style={{ flex: "1 1 180px", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                                                    <label style={{ fontSize: "0.8rem", fontWeight: "500", color: "var(--text)" }}>Input</label>
+                                                    <textarea
+                                                        rows={2}
+                                                        value={tc.input}
+                                                        onChange={(e) => handleInlineTestCaseChange(idx, "input", e.target.value)}
+                                                        required
+                                                        placeholder="Input data..."
+                                                        style={{ width: "100%", padding: "0.4rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg-app)", color: "var(--text-h)", fontFamily: "var(--mono)", fontSize: "0.8rem", boxSizing: "border-box" }}
+                                                    />
+                                                </div>
+                                                <div style={{ flex: "1 1 180px", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                                                    <label style={{ fontSize: "0.8rem", fontWeight: "500", color: "var(--text)" }}>Expected Output</label>
+                                                    <textarea
+                                                        rows={2}
+                                                        value={tc.expectedOutput}
+                                                        onChange={(e) => handleInlineTestCaseChange(idx, "expectedOutput", e.target.value)}
+                                                        required
+                                                        placeholder="Expected output..."
+                                                        style={{ width: "100%", padding: "0.4rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg-app)", color: "var(--text-h)", fontFamily: "var(--mono)", fontSize: "0.8rem", boxSizing: "border-box" }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                                                <label style={{ fontSize: "0.8rem", fontWeight: "500", color: "var(--text)" }}>Explanation (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    value={tc.explanation || ""}
+                                                    onChange={(e) => handleInlineTestCaseChange(idx, "explanation", e.target.value)}
+                                                    placeholder="Explanation..."
+                                                    style={{ width: "100%", padding: "0.4rem", borderRadius: "4px", border: "1px solid var(--border)", backgroundColor: "var(--bg-app)", color: "var(--text-h)", fontSize: "0.8rem", boxSizing: "border-box" }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleAddInlineTestCase}
+                                    style={{ marginTop: "0.5rem", padding: "0.3rem 0.6rem", border: "1px solid var(--accent)", color: "var(--accent)", backgroundColor: "transparent", borderRadius: "4px", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer" }}
+                                >
+                                    + Add Test Case
+                                </button>
                             </div>
 
                             {inlineError && <div style={{ color: "red", fontSize: "0.85rem", fontWeight: "bold" }}>{inlineError}</div>}
