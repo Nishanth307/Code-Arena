@@ -186,6 +186,13 @@ function ProblemDetails() {
                         </div>
                     )}
 
+                    {problem.constraints && (
+                        <div>
+                            <h3 style={{ fontSize: "1.1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>Constraints</h3>
+                            <p style={{ whiteSpace: "pre-wrap", color: "var(--text-h)", fontSize: "0.95rem", lineHeight: "1.6" }}>{problem.constraints}</p>
+                        </div>
+                    )}
+
                     {/* Examples Section */}
                     {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
                         <div>

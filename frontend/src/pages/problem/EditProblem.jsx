@@ -10,6 +10,7 @@ function EditProblem() {
         statement: "",
         inputFormat: "",
         outputFormat: "",
+        constraints: "",
         difficulty: "",
         timeLimitMillis: 1000,
         memoryLimitMBs: 256
@@ -34,6 +35,7 @@ function EditProblem() {
                 statement: problem.statement || "",
                 inputFormat: problem.inputFormat || "",
                 outputFormat: problem.outputFormat || "",
+                constraints: problem.constraints || "",
                 difficulty: problem.difficulty || "",
                 timeLimitMillis: problem.timeLimitMillis !== undefined ? problem.timeLimitMillis : 1000,
                 memoryLimitMBs: problem.memoryLimitMBs !== undefined ? problem.memoryLimitMBs : 256
@@ -121,10 +123,10 @@ function EditProblem() {
                     <label style={{ fontWeight: "600", color: "var(--text-h)" }}>Input Format</label>
                     <textarea
                         name="inputFormat"
-                        rows={3}
+                        rows={4}
                         value={formData.inputFormat}
                         onChange={handleChange}
-                        placeholder="Input Format"
+                        placeholder="Describe how the program should read the input (e.g. size of array followed by space-separated elements). Include parsing code snippets in Python/C++."
                         style={{ width: "100%", padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
                     />
                 </div>
@@ -133,10 +135,22 @@ function EditProblem() {
                     <label style={{ fontWeight: "600", color: "var(--text-h)" }}>Output Format</label>
                     <textarea
                         name="outputFormat"
-                        rows={3}
+                        rows={4}
                         value={formData.outputFormat}
                         onChange={handleChange}
-                        placeholder="Output Format"
+                        placeholder="Describe what the program should print (e.g. Print a single integer representing the sum). Include print code snippets."
+                        style={{ width: "100%", padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
+                    />
+                </div>
+
+                <div className="form-group" style={{ display: "flex", flexDirection: "column", gap: "0.4rem", textAlign: "left" }}>
+                    <label style={{ fontWeight: "600", color: "var(--text-h)" }}>Constraints</label>
+                    <textarea
+                        name="constraints"
+                        rows={3}
+                        value={formData.constraints}
+                        onChange={handleChange}
+                        placeholder="Constraints"
                         style={{ width: "100%", padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)", fontFamily: "inherit" }}
                     />
                 </div>

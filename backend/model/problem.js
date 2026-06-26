@@ -23,14 +23,13 @@ const problemSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-problemSchema.pre("validate", function(next) {
+problemSchema.pre("validate", function() {
     if (!this.statement && this.description) {
         this.statement = this.description;
     }
     if (!this.description && this.statement) {
         this.description = this.statement;
     }
-    next();
 });
 
 module.exports = mongoose.model("Problem", problemSchema);

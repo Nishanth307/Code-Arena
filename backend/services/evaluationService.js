@@ -3,6 +3,8 @@ const generateFile = require("./compiler/generateFile");
 const cleanupFile = require("./compiler/cleanupFile");
 const Submission = require("../model/submission");
 const Problem = require("../model/problem");
+const TestCase = require("../model/testCase");
+const storage = require("./storage");
 
 const evaluateSubmission = async (submissionId, language, code) => {
     let filePath;
@@ -24,8 +26,10 @@ const evaluateSubmission = async (submissionId, language, code) => {
         filePath = await generateFile(language, code);
         const factory = CompilerFactoryProvider.getFactory(language);
 
-        const testCases = problem.testCases || [];
+        const testCases = await TestCase.find({ problemId: problem._id });
         let verdict = "ACCEPTED";
+        const testCaseResults = [];
+        let totalExecutionTime = 0;
 
         if (testCases.length === 0) {
             // Fallback default run if no test cases are registered
@@ -34,29 +38,59 @@ const evaluateSubmission = async (submissionId, language, code) => {
         } else {
             for (let i = 0; i < testCases.length; i++) {
                 const tc = testCases[i];
+                let tcStatus = "ACCEPTED";
+                let tcOutput = "";
+                let tcError = "";
+                let tcExecutionTime = 0;
+
                 try {
-                    const output = await factory.execute(filePath, tc.input || "");
-                    const cleanOutput = (output || "").trim().replace(/\r\n/g, "\n");
-                    const cleanExpected = (tc.expectedOutput || "").trim().replace(/\r\n/g, "\n");
+                    // Fetch input and expected output from storage adapter
+                    const inputContent = await storage.getObject(tc.inputPath);
+                    const expectedOutput = await storage.getObject(tc.outputPath);
+
+                    const start = Date.now();
+                    const output = await factory.execute(filePath, inputContent || "");
+                    tcExecutionTime = Date.now() - start;
+                    totalExecutionTime += tcExecutionTime;
+
+                    tcOutput = output || "";
+
+                    const cleanOutput = tcOutput.trim().replace(/\r\n/g, "\n");
+                    const cleanExpected = expectedOutput.trim().replace(/\r\n/g, "\n");
 
                     if (cleanOutput !== cleanExpected) {
-                        verdict = "WRONG_ANSWER";
-                        console.log(`Submission ${submissionId} failed test case ${i + 1}. Expected: [${cleanExpected}], Got: [${cleanOutput}]`);
-                        break;
+                        tcStatus = "WRONG_ANSWER";
+                        if (verdict === "ACCEPTED") {
+                            verdict = "WRONG_ANSWER";
+                        }
                     }
                 } catch (runErr) {
-                    console.error(`Runtime error on test case ${i + 1}:`, runErr);
-                    verdict = "RUNTIME_ERROR";
-                    break;
+                    tcStatus = "RUNTIME_ERROR";
+                    if (verdict === "ACCEPTED" || verdict === "WRONG_ANSWER") {
+                        verdict = "RUNTIME_ERROR";
+                    }
+                    tcError = runErr.message || String(runErr);
                 }
+
+                testCaseResults.push({
+                    testCaseId: tc._id,
+                    inputPath: tc.inputPath,
+                    expectedOutputPath: tc.outputPath,
+                    userOutput: tcOutput,
+                    status: tcStatus,
+                    executionTime: tcExecutionTime,
+                    error: tcError
+                });
             }
         }
 
         await Submission.findByIdAndUpdate(submissionId, {
             verdict: verdict,
+            executionTime: totalExecutionTime,
+            testCaseResults: testCaseResults,
             updatedAt: new Date()
         });
-        console.log(`Updated submission ${submissionId} verdict to ${verdict}`);
+        console.log(`Updated submission ${submissionId} verdict to ${verdict} with ${testCaseResults.length} test case results`);
     } catch (error) {
         console.error(`Error processing submission ${submissionId}:`, error);
         try {

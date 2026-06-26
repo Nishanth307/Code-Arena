@@ -1,6 +1,5 @@
 const asyncHandler = require("../middleware/asyncHandler");
-const minioClient = require("../config/minio");
-const settings = require("../config/settings");
+const storage = require("../services/storage");
 const TestCase = require("../model/testCase");
 
 exports.uploadTestCase = asyncHandler(async (req, res) => {
@@ -14,8 +13,8 @@ exports.uploadTestCase = asyncHandler(async (req, res) => {
     const inputPath = `testcases/${problemId}/input_${timestamp}.txt`;
     const outputPath = `testcases/${problemId}/output_${timestamp}.txt`;
 
-    await minioClient.putObject(settings.MINIO_BUCKET, inputPath, inputFile.buffer);
-    await minioClient.putObject(settings.MINIO_BUCKET, outputPath, outputFile.buffer);
+    await storage.putObject(inputPath, inputFile.buffer);
+    await storage.putObject(outputPath, outputFile.buffer);
 
     const testCase = await TestCase.create({
         problemId,

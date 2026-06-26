@@ -10,6 +10,17 @@ const submissionSchema = new mongoose.Schema({
     executionTime: {type: Number},
     memoryUsed: {type: Number},
     logMinIOPath: {type: String, trim: true},
+    testCaseResults: [
+        {
+            testCaseId: { type: mongoose.Schema.Types.ObjectId, ref: "TestCase" },
+            inputPath: { type: String },
+            expectedOutputPath: { type: String },
+            userOutput: { type: String },
+            status: { type: String, enum: ["ACCEPTED", "WRONG_ANSWER", "RUNTIME_ERROR", "COMPILATION_ERROR", "TIME_LIMIT_EXCEEDED"] },
+            executionTime: { type: Number },
+            error: { type: String }
+        }
+    ],
     submittedAt: {type: Date, default: Date.now},
     createdAt: {type: Date, default: Date.now},
     updatedAt: {type: Date, default: Date.now},
