@@ -4,7 +4,7 @@ const Minio = require("minio");
 const minioClient = new Minio.Client({
     endPoint: settings.MINIO_ENDPOINT,
     port: Number(settings.MINIO_PORT),
-    useSSL: false,
+    useSSL: settings.MINIO_USE_SSL,
     accessKey: settings.MINIO_ACCESS_KEY,
     secretKey: settings.MINIO_SECRET_KEY,
 });

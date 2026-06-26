@@ -22,6 +22,10 @@ const allowedOrigins = [
     "http://127.0.0.1:5000"
 ];
 
+if (settings.FRONTEND_URL) {
+    const cleaned = settings.FRONTEND_URL.replace(/['"]/g, "").trim();
+    allowedOrigins.push(cleaned);
+}
 if (settings.BASE_URL) {
     const cleaned = settings.BASE_URL.replace(/['"]/g, "").trim();
     allowedOrigins.push(cleaned);

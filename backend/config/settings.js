@@ -11,9 +11,9 @@ const requiredEnvVars = [
     "JWT_SECRET",
     "REFRESH_TOKEN_LIMIT_DAYS",
     "ACCESS_TOKEN_LIMIT_HOURS",
-    // "KAFKA_BROKER",
-    // "REDIS_HOST",
-    // "REDIS_PORT",
+    "KAFKA_BROKER",
+    "REDIS_HOST",
+    "REDIS_PORT",
     "MINIO_ENDPOINT",
     "MINIO_PORT",
     "MINIO_ACCESS_KEY",
@@ -47,6 +47,8 @@ const settings = {
     MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
     MINIO_BUCKET: process.env.MINIO_BUCKET,
+    FRONTEND_URL: process.env.FRONTEND_URL,
+    MINIO_USE_SSL: process.env.MINIO_USE_SSL === "true",
 };
 
 module.exports = settings;
