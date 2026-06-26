@@ -1,5 +1,5 @@
 const Submission = require("../model/submission");
-const { sendSubmissionJob } = require("../services/kafka/producer");
+const { evaluateSubmission } = require("../services/evaluationService");
 
 const getSubmissions = async (req, res) => {
     try {
@@ -56,12 +56,10 @@ const createSubmission = async (req, res) => {
 
         const submission = await Submission.create(req.body);
         
-        // Enqueue the evaluation job to Kafka
-        await sendSubmissionJob({
-            submissionId: submission._id,
-            language: submission.language,
-            code: req.body.code || "",
-            input: req.body.input || ""
+        // Asynchronously evaluate the submission in the background
+        setImmediate(() => {
+            evaluateSubmission(submission._id, submission.language, req.body.code || "")
+                .catch((err) => console.error("Background evaluation error:", err));
         });
 
         return res.status(201).json({

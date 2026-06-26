@@ -28,15 +28,8 @@ function Navbar() {
                 alignItems: "center",
                 gap: "1.5rem"
             }}>
-                <Link to="/problems" style={{ textDecoration: "none", color: "var(--text-h)", fontSize: "0.95rem", fontWeight: "500" }}>Problems</Link>
-                <Link to="/contests" style={{ textDecoration: "none", color: "var(--text-h)", fontSize: "0.95rem", fontWeight: "500" }}>Contests</Link>
-                <Link to="/submissions" style={{ textDecoration: "none", color: "var(--text-h)", fontSize: "0.95rem", fontWeight: "500" }}>Submissions</Link>
-                
                 {user ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginLeft: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "1.2rem" }}>
-                        <Link to="/dashboard" style={{ textDecoration: "none", color: "var(--text-h)", fontSize: "0.95rem", fontWeight: "500" }}>
-                            Dashboard
-                        </Link>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                         <Link to="/profile" style={{ textDecoration: "none", color: "#007bff", fontSize: "0.95rem", fontWeight: "600" }}>
                             {user.firstName} {user.lastName} ({user.role})
                         </Link>
@@ -58,7 +51,7 @@ function Navbar() {
                         </button>
                     </div>
                 ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginLeft: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "1.2rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                         <Link to="/login" style={{ textDecoration: "none", color: "var(--text-h)", fontSize: "0.95rem", fontWeight: "500" }}>Login</Link>
                         <Link 
                             to="/register" 
@@ -67,7 +60,7 @@ function Navbar() {
                                 color: "#fff", 
                                 backgroundColor: "#007bff", 
                                 padding: "0.4rem 0.9rem", 
-                                borderRadius: "6px",
+                                borderRadius: "6px", 
                                 fontWeight: "600",
                                 fontSize: "0.85rem"
                             }}

@@ -1,13 +1,6 @@
 
 services:
 
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
 
   mongo:
     image: mongo:latest
@@ -28,33 +21,6 @@ services:
     volumes:
       - minio-data:/data
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.0.1
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
-  kafka:
-    image: confluentinc/cp-kafka:7.0.1
-    container_name: kafka
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-  
   backend:
     build: ./backend
     container_name: code_arena_backend
@@ -62,8 +28,6 @@ services:
       - "5000:5000"
     depends_on:
       - mongo
-      - redis
-      - kafka
       - minio
     volumes:
       - ./backend:/app
@@ -73,9 +37,6 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongo:27017/online_judge
-      - KAFKA_BROKER=kafka:29092
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
 
@@ -95,6 +56,5 @@ services:
 
 volumes:
   mongo-data:
-  redis-data:
   minio-data:
     

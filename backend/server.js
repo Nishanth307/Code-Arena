@@ -9,7 +9,6 @@ const submissionRoute = require("./routes/submissionRoutes");
 const testCaseRoute = require("./routes/testCaseRoutes");
 const compilerRoute = require("./routes/compilerRoutes");
 const errorHandler = require("./middleware/errorHandler");
-const { connectProducer } = require("./services/kafka/producer");
 
 const app = express();
 
@@ -76,11 +75,8 @@ const startServer = async () => {
     try {
         //mongo db connection
         await DBConnection();
-        // kafka producer connection
-        await connectProducer();
 
         console.log("MongoDB Connected");
-        console.log("Kafka Producer Connected");
 
         //express server start
         app.listen(settings.BACKEND_PORT, () => {
