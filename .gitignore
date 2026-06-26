@@ -18,4 +18,3 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 gcp-storage-key.json
-gcp-storage-key.json

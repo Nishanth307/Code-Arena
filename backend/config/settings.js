@@ -3,6 +3,11 @@ const path = require("path");
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
+// On Cloud Run / production environments, PORT is injected, map it to BACKEND_PORT if not set
+if (process.env.PORT && !process.env.BACKEND_PORT) {
+    process.env.BACKEND_PORT = process.env.PORT;
+}
+
 const requiredEnvVars = [
     "APP_NAME",
     "BASE_URL",

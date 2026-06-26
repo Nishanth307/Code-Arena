@@ -11,6 +11,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 8080
 
-CMD ["sh", "-c", "node seed.js && npm run dev"]
+CMD ["node", "server.js"]
