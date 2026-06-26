@@ -63,7 +63,9 @@ const seedData = [
 
 async function seed() {
     try {
-        await mongoose.connect(settings.MONGODB_URI);
+        await mongoose.connect(settings.MONGODB_URI, {
+            dbName: settings.APP_NAME
+        });
         console.log("Connected to MongoDB for seeding");
 
         // Clear existing problems and test cases

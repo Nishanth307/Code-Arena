@@ -36,7 +36,7 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/online_judge
+      # - MONGODB_URI=mongodb://mongo:27017/online_judge
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
 
