@@ -8,6 +8,13 @@ const resolveApiUrl = () => {
         }
         return cleaned;
     }
+    // Dynamically target the host IP if accessed via local network
+    if (typeof window !== "undefined" && window.location) {
+        const hostname = window.location.hostname;
+        if (hostname !== "localhost" && hostname !== "127.0.0.1" && !hostname.includes("example.com")) {
+            return `http://${hostname}:5000/api`;
+        }
+    }
     // Default: use Vite dev proxy in development
     if (import.meta.env.DEV) {
         return "/api";
@@ -19,6 +26,13 @@ const resolveBaseUrl = () => {
     const fromEnv = import.meta.env.VITE_BASE_URL;
     if (fromEnv) {
         return fromEnv.replace(/['"]/g, "").trim();
+    }
+    // Dynamically target the host IP if accessed via local network
+    if (typeof window !== "undefined" && window.location) {
+        const hostname = window.location.hostname;
+        if (hostname !== "localhost" && hostname !== "127.0.0.1" && !hostname.includes("example.com")) {
+            return `http://${hostname}:5000`;
+        }
     }
     if (import.meta.env.DEV) {
         return "";
