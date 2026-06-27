@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser } from "../../api/userApi.js";
+import AuthContext from "../../context/AuthContext.jsx";
 
 export default function Register() {
     const navigate = useNavigate();
+    const { fetchCurrentUser } = useContext(AuthContext);
     const [form, setForm] = useState({
-        firstName: "", lastName: "", email: "", password: "", confirm: "", role: "USER"
+        firstName: "", lastName: "", email: "", password: "", confirm: ""
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -19,12 +21,13 @@ export default function Register() {
         setError("");
 
         if (form.password !== form.confirm) {
-            return setError("passwords do not match.");
+            return setError("Passwords do not match.");
         }
         setLoading(true);
         try {
-            await registerUser(form.firstName, form.lastName, form.email, form.password, form.role);
-            navigate("/login");
+            await registerUser(form.firstName, form.lastName, form.email, form.password);
+            await fetchCurrentUser();
+            navigate("/dashboard");
         } catch (err) {
             setError(err.message);
         } finally {
@@ -34,7 +37,7 @@ export default function Register() {
 
     return (
         <div className="auth-container">
-            <h2>create Account</h2>
+            <h2>Create Account</h2>
             <form onSubmit={handleSubmit}>
                 <input
                     name="firstName"
@@ -49,6 +52,7 @@ export default function Register() {
                     placeholder="Last Name"
                     value={form.lastName}
                     onChange={handleChange}
+                    required
                 />
 
                 <input
@@ -78,26 +82,12 @@ export default function Register() {
                     type="password"
                 />
 
-                <div className="form-group" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", textAlign: "left" }}>
-                    <label style={{ fontWeight: "600", fontSize: "0.9rem", color: "var(--text)" }}>Select Role:</label>
-                    <select
-                        name="role"
-                        value={form.role}
-                        onChange={handleChange}
-                        required
-                        style={{ padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "var(--bg)", color: "var(--text-h)" }}
-                    >
-                        <option value="USER">USER (Participant)</option>
-                        <option value="ADMIN">ADMIN (Organizer)</option>
-                    </select>
-                </div>
-
                 {error && <p className="error">{error}</p>}
                 <button type="submit" disabled={loading}>
                     {loading ? "Creating..." : "Create Account"}
                 </button>
             </form>
-            <p>Already have account? <Link to="/login">Login here</Link></p>
+            <p>Already have an account? <Link to="/login">Login here</Link></p>
         </div>
-    )
+    );
 }

@@ -6,6 +6,7 @@ import AuthContext from "../../context/AuthContext";
 function ProblemList() {
     const [problems, setProblems] = useState([]);
     const [loading, setloading] = useState(true);
+    const [error, setError] = useState("");
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
@@ -13,11 +14,12 @@ function ProblemList() {
     }, []);
 
     const fetchProblems = async () => {
+        setError("");
         try {
             const response = await getProblems();
             setProblems(response.problems || []);
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Failed to load problems");
         } finally {
             setloading(false);
         }
@@ -38,6 +40,18 @@ function ProblemList() {
 
     if (loading) {
         return <div style={{ padding: "2rem", textAlign: "center" }}><h2>Loading problems...</h2></div>;
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+                <h2>Failed to load problems</h2>
+                <p style={{ color: "var(--text)", marginBottom: "1rem" }}>{error}</p>
+                <button onClick={fetchProblems} style={{ padding: "0.6rem 1.2rem", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+                    Retry
+                </button>
+            </div>
+        );
     }
 
     const isAdmin = user?.role === "ADMIN";

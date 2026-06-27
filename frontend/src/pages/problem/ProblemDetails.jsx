@@ -68,6 +68,13 @@ function ProblemDetails() {
             setRunOutput("Please write some code first.");
             return;
         }
+
+        const isLoggedIn = !!localStorage.getItem("token");
+        if (!isLoggedIn) {
+            navigate("/login", { state: { message: "Please log in to run code." } });
+            return;
+        }
+
         setRunning(true);
         setRunOutput("");
         setError("");
@@ -118,8 +125,9 @@ function ProblemDetails() {
             const submissionId = sub?._id || response.submissionId;
             
             if (submissionId) {
-                // Save ID for dashboard tracking
                 localStorage.setItem("last_submission_id", submissionId);
+                navigate(`/submissions/${submissionId}`);
+                return;
             }
             navigate("/dashboard");
         } catch (err) {

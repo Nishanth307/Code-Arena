@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getSubmissions } from "../../api/submissionApi";
 
 function SubmissionList() {
@@ -64,9 +65,11 @@ function SubmissionList() {
                                         {new Date(submission.submittedAt || submission.createdAt).toLocaleString()}
                                     </td>
                                     <td style={{ padding: "1rem", textAlign: "right" }}>
-                                        <span style={getVerdictStyle(submission.verdict)}>
-                                            {submission.verdict}
-                                        </span>
+                                        <Link to={`/submissions/${submission._id}`} style={{ textDecoration: "none" }}>
+                                            <span style={getVerdictStyle(submission.verdict)}>
+                                                {submission.verdict}
+                                            </span>
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}

@@ -334,6 +334,25 @@ const getContestLeaderboard = async (req, res) => {
     }
 };
 
+const getContestRegistrationStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const registration = await ContestRegistration.findOne({ contestId: id, userId: req.userId });
+        if (registration) {
+            return res.status(200).json({
+                registered: true,
+                status: registration.status || "REGISTERED"
+            });
+        }
+        return res.status(200).json({
+            registered: false,
+            status: "UNREGISTERED"
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     createContest,
     updateContest,
@@ -343,5 +362,6 @@ module.exports = {
     getContestById,
     registerForContest,
     joinContest,
+    getContestRegistrationStatus,
     getContestLeaderboard
 };

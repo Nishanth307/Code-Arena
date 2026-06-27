@@ -26,8 +26,11 @@ export default function Login() {
         try {
             const data = await loginUser(form.email, form.password);
             
-            // Save user info
+            // Save user info and token
             localStorage.setItem("user", JSON.stringify(data.user));
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+            }
             
             // Fetch current user details into global AuthContext
             await fetchCurrentUser();

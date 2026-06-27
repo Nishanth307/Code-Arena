@@ -1,44 +1,40 @@
-import settings from "../config/settings";
 import axiosInstance from "./axiosInstance";
 
-const BASE = `${settings.BASE_URL}/api/user`;
-
-export const loginUser = async(email,password) => {
-    const res = await fetch(`${BASE}/login`,{
-        method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({email, password}),
-        credentials: "include"
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.message || "Login failed");
-    
-    // Save token for Axios request interceptor
+export const loginUser = async (email, password) => {
+    const response = await axiosInstance.post("user/login", { email, password });
+    const data = response.data;
     if (data.token) {
         localStorage.setItem("token", data.token);
+    }
+    if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
     }
     return data;
 };
 
-export const registerUser = async (firstName, lastName, email, password, role) => {
-    const res = await fetch(`${BASE}/register`, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({firstName, lastName, email, password, role}),
-        credentials: "include"
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Registration failed");
-    return data; 
+export const registerUser = async (firstName, lastName, email, password) => {
+    const response = await axiosInstance.post("user/register", { firstName, lastName, email, password });
+    const data = response.data;
+    if (data.token) {
+        localStorage.setItem("token", data.token);
+    }
+    if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+    }
+    return data;
 };
 
-// check
-export const logoutUser = async (logoutData) => {
-    const res = await axiosInstance.post(
-        "user/logout",
-    );
-    return res.data;
-}
+export const logoutUser = async () => {
+    const response = await axiosInstance.post("user/logout");
+    return response.data;
+};
+
+export const updateProfile = async (profileData) => {
+    const response = await axiosInstance.put("user/profile", profileData);
+    return response.data;
+};
+
+export const getCurrentUser = async () => {
+    const response = await axiosInstance.get("user/get-current-user");
+    return response.data;
+};

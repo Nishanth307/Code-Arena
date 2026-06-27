@@ -13,6 +13,8 @@ import EditProblem from "../pages/problem/EditProblem";
 import SubmissionList from "../pages/submission/SubmissionList";
 import SubmissionDetails from "../pages/submission/SubmissionDetails";
 import SubmitSolution from "../pages/submission/SubmitSoultion";
+import Leaderboard from "../pages/leaderboard/Leaderboard";
+import UserStats from "../pages/leaderboard/UserStats";
 import Profile from "../pages/profile/Profile";
 
 function AdminRoute({ children }) {
@@ -45,6 +47,9 @@ function AppRoutes() {
             <Route path="/submissions" element={<SubmissionList />} />
             <Route path="/submissions/:id" element={<SubmissionDetails />} />
             <Route path="/submit/:id" element={<SubmitSolution />} />
+
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/leaderboard/user/:id" element={<UserStats />} />
             
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>

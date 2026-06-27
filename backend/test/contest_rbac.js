@@ -137,9 +137,17 @@ async function runTests() {
     res = await request("POST", `/api/contests/${contestId}/join`, {}, userToken);
     assert("User cannot join without registration", res.status === 403);
 
+    // Check registration status before registering
+    res = await request("GET", `/api/contests/${contestId}/status`, null, userToken);
+    assert("User registration status is false initially", res.status === 200 && res.data.registered === false);
+
     // User registers
     res = await request("POST", `/api/contests/${contestId}/register`, {}, userToken);
     assert("User can register successfully", res.status === 201 && res.data.registration);
+
+    // Check registration status after registering
+    res = await request("GET", `/api/contests/${contestId}/status`, null, userToken);
+    assert("User registration status is true after registering", res.status === 200 && res.data.registered === true && res.data.status === "REGISTERED");
 
     // User cannot join before contest starts
     res = await request("POST", `/api/contests/${contestId}/join`, {}, userToken);

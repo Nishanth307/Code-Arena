@@ -34,7 +34,7 @@ function Navbar() {
                             {user.firstName} {user.lastName} ({user.role})
                         </Link>
                         <button 
-                            onClick={logout} 
+                            onClick={() => logout()} 
                             style={{ 
                                 padding: "0.4rem 0.8rem", 
                                 border: "1px solid #dc3545", 

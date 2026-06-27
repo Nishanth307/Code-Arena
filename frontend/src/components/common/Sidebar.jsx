@@ -58,6 +58,11 @@ function Sidebar() {
                         Submissions
                     </Link>
                 </li>
+                <li>
+                    <Link to="/leaderboard" style={linkStyle("/leaderboard")}>
+                        Leaderboard
+                    </Link>
+                </li>
                 {user && (
                     <li>
                         <Link to="/profile" style={linkStyle("/profile")}>
