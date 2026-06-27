@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG VITE_API_URL
+ARG VITE_BASE_URL
 RUN npm run build
 
 # Stage 2: Serve the files using serve

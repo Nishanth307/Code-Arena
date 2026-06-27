@@ -4,13 +4,25 @@ const cleanupFile = require("./compiler/cleanupFile");
 const Submission = require("../model/submission");
 const Problem = require("../model/problem");
 const TestCase = require("../model/testCase");
+const ContestSubmission = require("../model/contestSubmission");
 const storage = require("./storage");
+const { analyzeSubmission } = require("./aiAnalysisService");
+
+const mapRunError = (runErr) => {
+    const msg = (runErr.message || String(runErr)).toLowerCase();
+    if (runErr.code === "TLE") return "TIME_LIMIT_EXCEEDED";
+    if (runErr.code === "MLE") return "MEMORY_LIMIT_EXCEEDED";
+    if (runErr.code === "CE") return "COMPILATION_ERROR";
+    if (msg.includes("syntaxerror") || msg.includes("indentationerror") ||
+        msg.includes("compilation failed")) {
+        return "COMPILATION_ERROR";
+    }
+    return "RUNTIME_ERROR";
+};
 
 const evaluateSubmission = async (submissionId, language, code) => {
     let filePath;
     try {
-        console.log(`Processing submission ID in background: ${submissionId}`);
-
         const submission = await Submission.findById(submissionId);
         if (!submission) {
             console.error(`Submission not found: ${submissionId}`);
@@ -23,6 +35,11 @@ const evaluateSubmission = async (submissionId, language, code) => {
             return;
         }
 
+        const execOptions = {
+            timeout: problem.timeLimitMillis || 2000,
+            maxBuffer: (problem.memoryLimitMBs || 256) * 1024 * 1024
+        };
+
         filePath = await generateFile(language, code);
         const factory = CompilerFactoryProvider.getFactory(language);
 
@@ -30,11 +47,16 @@ const evaluateSubmission = async (submissionId, language, code) => {
         let verdict = "ACCEPTED";
         const testCaseResults = [];
         let totalExecutionTime = 0;
+        let maxMemoryUsed = 0;
 
         if (testCases.length === 0) {
-            // Fallback default run if no test cases are registered
-            await factory.execute(filePath, "");
-            verdict = "ACCEPTED";
+            try {
+                const start = Date.now();
+                await factory.execute(filePath, "", execOptions);
+                totalExecutionTime = Date.now() - start;
+            } catch (runErr) {
+                verdict = mapRunError(runErr);
+            }
         } else {
             for (let i = 0; i < testCases.length; i++) {
                 const tc = testCases[i];
@@ -44,16 +66,17 @@ const evaluateSubmission = async (submissionId, language, code) => {
                 let tcExecutionTime = 0;
 
                 try {
-                    // Fetch input and expected output from storage adapter
                     const inputContent = await storage.getObject(tc.inputPath);
                     const expectedOutput = await storage.getObject(tc.outputPath);
 
                     const start = Date.now();
-                    const output = await factory.execute(filePath, inputContent || "");
+                    const output = await factory.execute(filePath, inputContent || "", execOptions);
                     tcExecutionTime = Date.now() - start;
                     totalExecutionTime += tcExecutionTime;
 
                     tcOutput = output || "";
+                    const outputBytes = Buffer.byteLength(tcOutput, "utf8");
+                    maxMemoryUsed = Math.max(maxMemoryUsed, outputBytes);
 
                     const cleanOutput = tcOutput.trim().replace(/\r\n/g, "\n");
                     const cleanExpected = expectedOutput.trim().replace(/\r\n/g, "\n");
@@ -65,11 +88,12 @@ const evaluateSubmission = async (submissionId, language, code) => {
                         }
                     }
                 } catch (runErr) {
-                    tcStatus = "RUNTIME_ERROR";
-                    if (verdict === "ACCEPTED" || verdict === "WRONG_ANSWER") {
-                        verdict = "RUNTIME_ERROR";
-                    }
+                    tcStatus = mapRunError(runErr);
                     tcError = runErr.message || String(runErr);
+
+                    if (verdict === "ACCEPTED" || verdict === "WRONG_ANSWER") {
+                        verdict = tcStatus;
+                    }
                 }
 
                 testCaseResults.push({
@@ -81,16 +105,38 @@ const evaluateSubmission = async (submissionId, language, code) => {
                     executionTime: tcExecutionTime,
                     error: tcError
                 });
+
+                if (verdict !== "ACCEPTED" && verdict !== "WRONG_ANSWER") {
+                    break;
+                }
             }
         }
 
+        const logPath = `logs/${submissionId}/evaluation.log`;
+        const logContent = testCaseResults.map((r, i) =>
+            `Test ${i + 1}: ${r.status}${r.error ? ` — ${r.error}` : ""}`
+        ).join("\n");
+        await storage.putObject(logPath, Buffer.from(logContent));
+
         await Submission.findByIdAndUpdate(submissionId, {
-            verdict: verdict,
+            verdict,
             executionTime: totalExecutionTime,
-            testCaseResults: testCaseResults,
+            memoryUsed: maxMemoryUsed,
+            logMinIOPath: logPath,
+            testCaseResults,
             updatedAt: new Date()
         });
-        console.log(`Updated submission ${submissionId} verdict to ${verdict} with ${testCaseResults.length} test case results`);
+
+        if (submission.contestId) {
+            const DIFFICULTY_POINTS = { EASY: 10, MEDIUM: 30, HARD: 50 };
+            const score = verdict === "ACCEPTED" ? (DIFFICULTY_POINTS[problem.difficulty] || 10) : 0;
+            await ContestSubmission.findOneAndUpdate(
+                { submissionId: submission._id },
+                { score, verdict }
+            );
+        }
+
+        await analyzeSubmission(submissionId, code, language, verdict, problem.difficulty);
     } catch (error) {
         console.error(`Error processing submission ${submissionId}:`, error);
         try {
@@ -98,7 +144,11 @@ const evaluateSubmission = async (submissionId, language, code) => {
                 verdict: "COMPILATION_ERROR",
                 updatedAt: new Date()
             });
-            console.log(`Updated submission ${submissionId} verdict to COMPILATION_ERROR`);
+            await ContestSubmission.findOneAndUpdate(
+                { submissionId },
+                { score: 0, verdict: "COMPILATION_ERROR" }
+            );
+            await analyzeSubmission(submissionId, code, language, "COMPILATION_ERROR", "EASY");
         } catch (dbErr) {
             console.error("Failed to update submission error verdict in DB:", dbErr);
         }

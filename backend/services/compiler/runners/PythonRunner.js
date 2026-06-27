@@ -2,22 +2,37 @@ const { exec } = require("child_process");
 const CompilerRunner = require("./compilerInterface");
 
 class PythonRunner extends CompilerRunner {
-    async execute(filePath, input = "") {
+    async execute(filePath, input = "", options = {}) {
+        const timeout = options.timeout || 2000;
+        const maxBuffer = options.maxBuffer || 10 * 1024 * 1024;
+
         return new Promise((resolve, reject) => {
             const child = exec(
                 `python3 ${filePath}`,
-                { timeout: 2000 },
+                { timeout, maxBuffer, killSignal: "SIGKILL" },
                 (error, stdout, stderr) => {
                     if (error) {
-                        return reject(error);
+                        if (error.killed || error.signal === "SIGKILL" || error.code === "ETIMEDOUT") {
+                            const tleErr = new Error("Time Limit Exceeded");
+                            tleErr.code = "TLE";
+                            return reject(tleErr);
+                        }
+                        if (error.message && error.message.includes("maxBuffer")) {
+                            const mleErr = new Error("Memory Limit Exceeded");
+                            mleErr.code = "MLE";
+                            return reject(mleErr);
+                        }
+                        return reject(new Error(stderr || error.message));
                     }
-                    if (stderr) {
-                        return reject(stderr);
+                    if (stderr && stderr.trim()) {
+                        return reject(new Error(stderr));
                     }
                     resolve(stdout);
                 }
             );
-            child.stdin.write(input);
+            if (input) {
+                child.stdin.write(input);
+            }
             child.stdin.end();
         });
     }

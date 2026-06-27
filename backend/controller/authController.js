@@ -8,7 +8,7 @@ const AuthUtil = require("../utils/authUtil");
  */
 const registerUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, role } = req.body;
+        const { firstName, lastName, email, password } = req.body;
 
         if (!(firstName && lastName && email && password)) {
             return res.status(400).json({
@@ -17,11 +17,10 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Validate role if provided
-        if (role && !["USER", "ADMIN"].includes(role)) {
+        if (password.length < 6) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid role specified"
+                message: "Password must be at least 6 characters"
             });
         }
 
@@ -43,7 +42,7 @@ const registerUser = async (req, res) => {
             lastName: lastName,
             email: email.toLowerCase(),
             password: hashedPassword,
-            role: role || "USER"
+            role: "USER"
         });
 
         // generate tokens 

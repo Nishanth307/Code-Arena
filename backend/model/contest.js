@@ -9,8 +9,19 @@ const contestSchema = new mongoose.Schema({
     status: { type: String, enum: ["UPCOMING", "LIVE", "ENDED"], default: "UPCOMING" },
     participantCount: { type: Number, required: true, default: 0 },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    duration: { type: Number, required: [true, "Duration is required"] },
+    visibility: { type: String, enum: ["PUBLIC", "PRIVATE"], default: "PUBLIC" },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 })
+
+contestSchema.pre("validate", function() {
+    if (!this.duration && this.startTime && this.endTime) {
+        this.duration = Math.round((new Date(this.endTime) - new Date(this.startTime)) / (1000 * 60));
+    }
+    if (!this.duration) {
+        this.duration = 60; // default fallback
+    }
+});
 
 module.exports = mongoose.model("Contest", contestSchema);

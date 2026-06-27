@@ -19,7 +19,11 @@ const compileCode = async (req, res) => {
         }
         filePath = await generateFile(language, code);
         const factory = CompilerFactoryProvider.getFactory(language);
-        const output = await factory.execute(filePath, input);
+        const execOptions = {
+            timeout: req.body.timeLimitMillis || 2000,
+            maxBuffer: (req.body.memoryLimitMBs || 256) * 1024 * 1024
+        };
+        const output = await factory.execute(filePath, input || "", execOptions);
         return res.status(200).json({
             success: true,
             output
