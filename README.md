@@ -255,19 +255,21 @@ flowchart TD
 
 ---
 
-### `contests` (MongoDB Collection: `contests`) — **NEW**
+### `contests` (MongoDB Collection: `contests`) — **UPDATED**
 
 | Field            | Type       | Validation / Constraints                        | Description                                    |
 |------------------|------------|-------------------------------------------------|------------------------------------------------|
 | `_id`            | ObjectId   | Automatically generated                         | Primary key                                    |
-| `title`          | String     | Required, trimmed, unique                       | Contest name (e.g., "Monthly Challenge #5")    |
+| `title`          | String     | Required, trimmed, unique                       | Contest name                                   |
 | `description`    | String     | Optional                                        | Contest description and rules                  |
-| `startTime`      | Date       | Required, must be in future                     | Contest start timestamp                        |
-| `endTime`        | Date       | Required, must be after startTime               | Contest end timestamp                          |
-| `problemIds`     | [ObjectId] | Required, Ref: `problems`                       | Array of problem IDs in contest                |
+| `startTime`      | Date       | Required                                        | Contest start timestamp                        |
+| `endTime`        | Date       | Required                                        | Contest end timestamp                          |
+| `problems`       | [ObjectId] | Required, Ref: `Problem`                        | Array of problem IDs in contest                |
 | `status`         | String     | Enum: `['UPCOMING', 'LIVE', 'ENDED']`           | Current status (derived from timestamps)       |
 | `participantCount` | Number   | Integer, default 0                              | Count of users registered                      |
-| `createdBy`      | ObjectId   | Ref: `users`                                    | Admin/creator of contest                       |
+| `duration`       | Number     | Required, Integer (minutes)                     | Contest duration                               |
+| `visibility`     | String     | Enum: `['PUBLIC', 'PRIVATE']`, default: `PUBLIC`| Contest visibility level                       |
+| `createdBy`      | ObjectId   | Ref: `User`                                     | Admin/creator of contest                       |
 | `createdAt`      | Date       | Default: `Date.now()`                           | Contest creation timestamp                     |
 
 **Example Document:**
@@ -278,13 +280,41 @@ flowchart TD
   "description": "Compete with others on dynamic programming problems",
   "startTime": ISODate("2026-06-10T18:00:00Z"),
   "endTime": ISODate("2026-06-10T20:00:00Z"),
-  "problemIds": [ObjectId("507f1f77bcf86cd799439012"), ObjectId("507f1f77bcf86cd799439013")],
+  "problems": [ObjectId("507f1f77bcf86cd799439012"), ObjectId("507f1f77bcf86cd799439013")],
   "status": "LIVE",
   "participantCount": 247,
+  "duration": 120,
+  "visibility": "PUBLIC",
   "createdBy": ObjectId("507f1f77bcf86cd799439001"),
   "createdAt": ISODate("2026-06-01T10:00:00Z")
 }
 ```
+
+---
+
+### `contestregistrations` (MongoDB Collection: `contestregistrations`) — **NEW**
+
+| Field          | Type     | Validation / Constraints                        | Description                                  |
+|----------------|----------|-------------------------------------------------|----------------------------------------------|
+| `_id`          | ObjectId | Automatically generated                         | Primary key                                  |
+| `contestId`    | ObjectId | Required, Ref: `Contest`                        | Reference to the registered contest          |
+| `userId`       | ObjectId | Required, Ref: `User`                           | Reference to the registered user             |
+| `registeredAt` | Date     | Default: `Date.now()`                           | Registration timestamp                       |
+| `status`       | String   | Enum: `['REGISTERED', 'UNREGISTERED']`          | Current registration status                  |
+
+---
+
+### `contestsubmissions` (MongoDB Collection: `contestsubmissions`) — **NEW**
+
+| Field          | Type     | Validation / Constraints                        | Description                                  |
+|----------------|----------|-------------------------------------------------|----------------------------------------------|
+| `_id`          | ObjectId | Automatically generated                         | Primary key                                  |
+| `contestId`    | ObjectId | Required, Ref: `Contest`                        | Reference to the contest                     |
+| `userId`       | ObjectId | Required, Ref: `User`                           | Reference to the participant                 |
+| `problemId`    | ObjectId | Required, Ref: `Problem`                        | Reference to the solved problem              |
+| `submissionId` | ObjectId | Required, Ref: `Submission`                     | Reference to the underlying submission       |
+| `score`        | Number   | Default: 0                                      | Score achieved (points based on difficulty)  |
+| `verdict`      | String   | Required                                        | Evaluation verdict                           |
 
 ---
 
@@ -516,6 +546,39 @@ socket.on('verdict:' + submissionId, (submission) => {
 
 ---
 
+## 15. Contest APIs & Role-Based Access Control (RBAC) — **NEW**
+
+The platform implements robust role-based access control (RBAC) to differentiate between **Admins** and standard **Users** during contests.
+
+### Role Permissions Matrix
+
+| Permission / Action | Admin | User |
+|---------------------|-------|------|
+| Create Contest      | Yes   | No   |
+| Modify/Delete       | Yes   | No   |
+| View Participants   | Yes   | No   |
+| Register / Join     | No    | Yes  |
+| Submit Solutions    | No    | Yes  |
+| Appear on Board     | No    | Yes  |
+
+### API Endpoints
+
+#### Admin Endpoints
+- `POST   /api/admin/contests` — Create a new contest
+- `PUT    /api/admin/contests/:id` — Update contest details
+- `DELETE /api/admin/contests/:id` — Delete a contest and clean up registrations
+- `GET    /api/admin/contests/:id/participants` — View registered participants list
+
+#### User Endpoints
+- `GET  /api/contests` — List all available contests
+- `GET  /api/contests/:id` — Get specific contest details (hides problems if upcoming)
+- `POST /api/contests/:id/register` — Register for a contest (open until endTime)
+- `POST /api/contests/:id/join` — Join an active contest (only after registration)
+- `GET  /api/contests/:id/status` — Check user registration status (`{ registered: boolean, status: string }`)
+- `GET  /api/contests/:id/leaderboard` — Fetch contest leaderboard ranked by score and submission speed
+
+---
+
 *This document is for educational and learning purposes.*  
 *Author: Platform Engineering Team*  
-*Version: 2.0 (Feedback incorporated)*
+*Version: 2.1 (Contest Management & RBAC incorporated)*
