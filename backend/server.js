@@ -27,10 +27,10 @@ const allowedOrigins = [
 ];
 
 if (settings.FRONTEND_URL) {
-    allowedOrigins.push(settings.FRONTEND_URL.replace(/['"]/g, "").trim());
+    allowedOrigins.push(settings.FRONTEND_URL.replace(/['"]/g, "").replace(/\/$/, "").trim());
 }
 if (settings.BASE_URL) {
-    allowedOrigins.push(settings.BASE_URL.replace(/['"]/g, "").trim());
+    allowedOrigins.push(settings.BASE_URL.replace(/['"]/g, "").replace(/\/$/, "").trim());
 }
 if (settings.FRONTEND_PORT) {
     const port = String(settings.FRONTEND_PORT).replace(/['"]/g, "").trim();
