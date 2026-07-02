@@ -18,20 +18,54 @@ function Leaderboard() {
             const res = await getLeaderboard();
             setLeaderboard(res.leaderboard || []);
         } catch (err) {
-            setError(err.response?.data?.message || err.message || "Failed to load leaderboard");
+            setError(err.message);
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) return <div style={{ padding: "2rem" }}><h2>Loading leaderboard...</h2></div>;
+    if (loading) {
+        return (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
+                <div style={{
+                    border: "3px solid var(--border)",
+                    borderTop: "3px solid var(--accent)",
+                    borderRadius: "50%",
+                    width: "30px",
+                    height: "30px",
+                    animation: "spin 1s linear infinite",
+                    marginBottom: "1rem"
+                }}></div>
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
+                <div style={{ color: "var(--text)", fontSize: "1rem", fontWeight: "500" }}>Loading leaderboard...</div>
+            </div>
+        );
+    }
 
     if (error) {
         return (
-            <div style={{ padding: "2rem", textAlign: "center" }}>
-                <h2>Failed to load leaderboard</h2>
-                <p style={{ color: "var(--text)", marginBottom: "1rem" }}>{error}</p>
-                <button onClick={loadLeaderboard} style={{ padding: "0.6rem 1.2rem", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", maxWidth: "500px", margin: "0 auto", padding: "2rem", textAlign: "center" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
+                <h3 style={{ marginBottom: "0.5rem", color: "var(--text-h)" }}>Failed to load leaderboard</h3>
+                <p style={{ color: "var(--text)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>{error}</p>
+                <button
+                    onClick={loadLeaderboard}
+                    style={{
+                        padding: "0.6rem 1.5rem",
+                        backgroundColor: "var(--accent)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s"
+                    }}
+                >
                     Retry
                 </button>
             </div>
