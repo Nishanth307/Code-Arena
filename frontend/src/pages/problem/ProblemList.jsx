@@ -21,7 +21,7 @@ function ProblemList() {
         } catch (err) {
             let message = "Failed to load problems. Please try again later.";
             if (err.code === "ERR_NETWORK") {
-                message = "Network Error — is the backend running on port 5000?";
+                message = "Network Error with backend server. Please check if it is running.";
             } else if (err.response?.data?.message) {
                 message = err.response.data.message;
             } else if (err.message) {
