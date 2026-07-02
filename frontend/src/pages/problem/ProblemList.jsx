@@ -19,14 +19,15 @@ function ProblemList() {
             const response = await getProblems();
             setProblems(response.problems || []);
         } catch (err) {
-            const detail = JSON.stringify({
-                message: err.message,
-                code: err.code,
-                status: err.response?.status,
-                data: err.response?.data,
-                url: err.config?.url
-            }, null, 2);
-            setError(detail);
+            let message = "Failed to load problems. Please try again later.";
+            if (err.code === "ERR_NETWORK") {
+                message = "Network Error — is the backend running on port 5000?";
+            } else if (err.response?.data?.message) {
+                message = err.response.data.message;
+            } else if (err.message) {
+                message = err.message;
+            }
+            setError(message);
         } finally {
             setloading(false);
         }
