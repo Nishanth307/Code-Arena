@@ -58,14 +58,14 @@ export default function Login() {
 
             navigate("/dashboard");
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.message || err.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div style={{ maxWidth: "400px", margin: "4rem auto", padding: "2rem", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#fff" }}>
+        <div className="auth-container">
             <h2>Sign In</h2>
             
             {infoMessage && (
@@ -82,7 +82,7 @@ export default function Login() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <form onSubmit={handleSubmit}>
                 <input
                     type="email"
                     name="email"
@@ -90,7 +90,6 @@ export default function Login() {
                     value={form.email}
                     onChange={handleChange}
                     required
-                    style={{ padding: "0.6rem", borderRadius: "4px", border: "1px solid #ccc" }}
                 />
                 <input
                     type="password"
@@ -99,23 +98,10 @@ export default function Login() {
                     value={form.password}
                     onChange={handleChange}
                     required
-                    style={{ padding: "0.6rem", borderRadius: "4px", border: "1px solid #ccc" }}
                 />
 
-                {error && <p style={{ color: "red", margin: 0 }}>{error}</p>}
-                <button 
-                    type="submit" 
-                    disabled={loading}
-                    style={{
-                        padding: "0.7rem",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontWeight: "bold",
-                        cursor: loading ? "not-allowed" : "pointer"
-                    }}
-                >
+                {error && <p className="error">{error}</p>}
+                <button type="submit" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
                 </button>
             </form>

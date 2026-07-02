@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getProblemById } from "../../api/problemApi";
-import { createSubmission } from "../../api/submissionApi";
+import { createSubmission, getSubmissionById } from "../../api/submissionApi";
 import { runCode } from "../../api/compilerApi";
 
 function ProblemDetails() {
@@ -17,6 +17,10 @@ function ProblemDetails() {
     const [runOutput, setRunOutput] = useState("");
     const [running, setRunning] = useState(false);
     const [error, setError] = useState("");
+
+    const [submitting, setSubmitting] = useState(false);
+    const [submitVerdict, setSubmitVerdict] = useState("");
+    const [submitError, setSubmitError] = useState("");
 
     useEffect(() => {
         loadProblem();
@@ -95,6 +99,13 @@ function ProblemDetails() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setSubmitVerdict("");
+        setSubmitError("");
+
+        if (!formData.code || formData.code.trim() === "") {
+            setError("Please write code before requesting AI analysis.");
+            return;
+        }
 
         const isLoggedIn = !!localStorage.getItem("token");
 
@@ -115,6 +126,10 @@ function ProblemDetails() {
             return;
         }
 
+        setSubmitting(true);
+        setSubmitVerdict("PENDING");
+
+        let submissionId;
         try {
             const response = await createSubmission({
                 problemId: id,
@@ -122,17 +137,49 @@ function ProblemDetails() {
                 code: formData.code
             });
             const sub = response.submission || response.data?.submission || response.data;
-            const submissionId = sub?._id || response.submissionId;
+            submissionId = sub?._id || response.submissionId;
             
-            if (submissionId) {
-                localStorage.setItem("last_submission_id", submissionId);
-                navigate(`/submissions/${submissionId}`);
-                return;
+            if (!submissionId) {
+                throw new Error("No submission ID returned from server.");
             }
-            navigate("/dashboard");
+            localStorage.setItem("last_submission_id", submissionId);
         } catch (err) {
             setError(err.response?.data?.message || err.message || "Failed to create submission.");
+            setSubmitting(false);
+            setSubmitVerdict("");
+            return;
         }
+
+        // Poll for submission verdict status
+        const intervalId = setInterval(async () => {
+            try {
+                const response = await getSubmissionById(submissionId);
+                const sub = response.submission;
+                if (sub && sub.verdict !== "PENDING") {
+                    clearInterval(intervalId);
+                    setSubmitting(false);
+                    setSubmitVerdict(sub.verdict);
+
+                    const errorVerdicts = [
+                        "COMPILATION_ERROR",
+                        "RUNTIME_ERROR",
+                        "TIME_LIMIT_EXCEEDED",
+                        "MEMORY_LIMIT_EXCEEDED"
+                    ];
+
+                    if (errorVerdicts.includes(sub.verdict)) {
+                        // Stay on current page, extract error details
+                        const failedTc = sub.testCaseResults?.find(tc => tc.status !== "ACCEPTED");
+                        setSubmitError(failedTc?.error || `${sub.verdict}: Execution failed during evaluation.`);
+                    } else {
+                        // Redirect on ACCEPTED or WRONG_ANSWER
+                        navigate(`/submissions/${submissionId}`);
+                    }
+                }
+            } catch (err) {
+                // keep polling on temporary fetch error
+            }
+        }, 800);
     };
 
     if (error) {
@@ -334,6 +381,51 @@ function ProblemDetails() {
                             Submit Solution
                         </button>
                     </div>
+
+                    {/* Submission status and verdict */}
+                    {(submitting || submitVerdict) && (
+                        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem", textAlign: "left" }}>
+                            <span style={{ fontWeight: "600", fontSize: "0.9rem", color: "var(--text)" }}>Submission Result:</span>
+                            <div style={{
+                                marginTop: "0.5rem",
+                                padding: "1rem",
+                                backgroundColor: "#0f172a",
+                                borderRadius: "6px",
+                                border: "1px solid #1e293b",
+                                color: "#e2e8f0"
+                            }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontWeight: "600" }}>Verdict:</span>
+                                    <span style={{
+                                        padding: "0.25rem 0.6rem",
+                                        borderRadius: "4px",
+                                        fontWeight: "bold",
+                                        fontSize: "0.9rem",
+                                        backgroundColor: submitVerdict === "PENDING" ? "#fff3cd" : submitVerdict === "ACCEPTED" ? "#d4edda" : "#f8d7da",
+                                        color: submitVerdict === "PENDING" ? "#856404" : submitVerdict === "ACCEPTED" ? "#155724" : "#721c24",
+                                    }}>
+                                        {submitVerdict}
+                                    </span>
+                                </div>
+                                {submitError && (
+                                    <pre style={{
+                                        marginTop: "0.75rem",
+                                        padding: "0.75rem",
+                                        backgroundColor: "rgba(248, 113, 113, 0.1)",
+                                        color: "#f87171",
+                                        borderRadius: "4px",
+                                        overflowX: "auto",
+                                        whiteSpace: "pre-wrap",
+                                        fontFamily: "var(--mono)",
+                                        fontSize: "0.85rem",
+                                        border: "1px solid rgba(248, 113, 113, 0.2)"
+                                    }}>
+                                        {submitError}
+                                    </pre>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Output Terminal logs panel */}
                     {(runOutput || error || running) && (

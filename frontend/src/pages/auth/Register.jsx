@@ -20,16 +20,40 @@ export default function Register() {
         e.preventDefault();
         setError("");
 
+        if (!form.firstName.trim()) {
+            return setError("First name is required.");
+        }
+        if (!form.lastName.trim()) {
+            return setError("Last name is required.");
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            return setError("Please enter a valid email address.");
+        }
+
+        if (form.password.length < 6) {
+            return setError("Password must be at least 6 characters long.");
+        }
+
         if (form.password !== form.confirm) {
             return setError("Passwords do not match.");
         }
+
         setLoading(true);
         try {
             await registerUser(form.firstName, form.lastName, form.email, form.password);
             await fetchCurrentUser();
             navigate("/dashboard");
         } catch (err) {
-            setError(err.message);
+            const data = err.response?.data;
+            if (data?.errors && Array.isArray(data.errors)) {
+                setError(data.errors.join(" "));
+            } else if (data?.message) {
+                setError(data.message);
+            } else {
+                setError(err.message || "Registration failed. Please try again.");
+            }
         } finally {
             setLoading(false);
         }

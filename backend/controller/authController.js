@@ -61,10 +61,11 @@ const registerUser = async (req, res) => {
         };
 
         // Set HttpOnly cookie for the authentication token
+        const isProduction = settings.NODE_ENV === "production";
         res.cookie("token", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
 
@@ -145,10 +146,11 @@ const loginUser = async (req, res) => {
         };
 
         // Set HttpOnly cookie for the authentication token
+        const isProduction = settings.NODE_ENV === "production";
         res.cookie("token", accessToken, {
             httpOnly: true,
-            secure: settings.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
 
@@ -175,10 +177,11 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
     try {
         // Clear HttpOnly cookie on logout
+        const isProduction = settings.NODE_ENV === "production";
         res.clearCookie("token", {
             httpOnly: true,
-            secure: settings.NODE_ENV === "production",
-            sameSite: "lax"
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
         });
 
         res.status(200).json({

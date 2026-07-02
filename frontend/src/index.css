@@ -190,4 +190,19 @@ code {
     overflow-y: visible !important;
     flex: none !important;
   }
+  .app-body {
+    flex-direction: column !important;
+  }
+  .app-sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 1rem !important;
+  }
+  .auth-container {
+    margin: 2rem 1rem !important;
+    padding: 1.5rem 1rem !important;
+    max-width: 100% !important;
+  }
 }

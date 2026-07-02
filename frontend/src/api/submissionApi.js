@@ -1,7 +1,7 @@
 import axiosInstance from "./axiosInstance";
 
-export const getSubmissions = async (params) => {
-    const response = await axiosInstance.get("submission/", { params });
+export const getSubmissions = async () => {
+    const response = await axiosInstance.get("submission/");
     return response.data;
 };
 

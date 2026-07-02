@@ -7,6 +7,7 @@ function Layout({ children }) {
             <Navbar />
 
             <div
+                className="app-body"
                 style={{
                     display: "flex"
                 }}
@@ -14,6 +15,7 @@ function Layout({ children }) {
                 <Sidebar />
 
                 <main
+                    className="app-main"
                     style={{
                         flex: 1,
                         padding: "1rem"

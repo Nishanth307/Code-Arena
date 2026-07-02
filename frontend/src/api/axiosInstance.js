@@ -24,9 +24,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.code === "ERR_NETWORK") {
-            error.message = "Network Error — is the backend running on port 5000?";
-        }
+        console.error("RAW AXIOS ERROR:", error.code, error.message, error.config?.url);
         return Promise.reject(error);
     }
 );

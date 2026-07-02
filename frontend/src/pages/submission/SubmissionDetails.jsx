@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSubmissionById } from "../../api/submissionApi";
+import AuthContext from "../../context/AuthContext";
 
 function SubmissionDetails() {
     const { id } = useParams();
+    const { user } = useContext(AuthContext);
     const [submission, setSubmission] = useState(null);
     const [aiAnalysis, setAiAnalysis] = useState(null);
     const [error, setError] = useState("");

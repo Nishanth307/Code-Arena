@@ -25,7 +25,7 @@ export default function Dashboard() {
     const fetchUserSubmissions = async (userId) => {
         try {
             setLoadingSubmissions(true);
-            const res = await getSubmissions({ userId });
+            const res = await getSubmissions();
             setSubmissions(res.submissions || []);
         } catch (error) {
             console.error("Error fetching user submissions:", error);
@@ -187,7 +187,7 @@ export default function Dashboard() {
                                 ))}
                             </tbody>
                         </table>
-                        {submissions.length > 5 && (
+                         {submissions.length > 5 && (
                             <div style={{ marginTop: "1rem", textAlign: "center" }}>
                                 <Link to="/submissions" style={{ color: "#007bff", fontWeight: "bold", textDecoration: "none" }}>View All Submissions &rarr;</Link>
                             </div>

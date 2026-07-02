@@ -6,6 +6,7 @@ const ContestRegistration = require("../model/contestRegistration");
 const ContestSubmission = require("../model/contestSubmission");
 const storage = require("../services/storage");
 const { evaluateSubmission } = require("../services/evaluationService");
+const aiAnalysis = require("../model/aiAnalysis");
 
 const getSubmissions = async (req, res) => {
     try {
@@ -65,6 +66,27 @@ const getSubmissionById = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+const getSubmissionsByUserId = async (req, res) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "User ID is required" });
+        }
+        const submissions = await Submission.find({ userId })
+            .sort({ submittedAt: -1 })
+            .populate("problemId", "title difficulty")
+            .populate("userId", "firstName lastName email");
+
+        return res.status(200).json({
+            success: true,
+            message: "Submissions fetched successfully",
+            submissions
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
 
 const createSubmission = async (req, res) => {
     try {
@@ -139,4 +161,4 @@ const createSubmission = async (req, res) => {
     }
 };
 
-module.exports = { getSubmissions, getSubmissionById, createSubmission };
+module.exports = { getSubmissions, getSubmissionById, createSubmission, getSubmissionsByUserId };

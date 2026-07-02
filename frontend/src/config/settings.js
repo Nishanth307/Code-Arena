@@ -8,10 +8,19 @@ const resolveApiUrl = () => {
         }
         return cleaned;
     }
-    // Dynamically target the host IP if accessed via local network
+    // Dynamically target the host IP or Cloud Run backend URL
     if (typeof window !== "undefined" && window.location) {
         const hostname = window.location.hostname;
-        if (hostname !== "localhost" && hostname !== "127.0.0.1" && !hostname.includes("example.com")) {
+        
+        // 1. Cloud Run / Deployed Host dynamic domain routing (generic)
+        if (hostname.includes("frontend")) {
+            const backendHost = hostname.replace("frontend", "backend");
+            return `https://${backendHost}/api`;
+        }
+
+        // 2. Local network IP address mapping
+        const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+        if (isIp && hostname !== "127.0.0.1") {
             return `http://${hostname}:5000/api`;
         }
     }
@@ -19,7 +28,8 @@ const resolveApiUrl = () => {
     if (import.meta.env.DEV) {
         return "/api";
     }
-    return "http://localhost:5000/api";
+    // Do not use localhost in production builds
+    return "/api";
 };
 
 const resolveBaseUrl = () => {
@@ -27,17 +37,27 @@ const resolveBaseUrl = () => {
     if (fromEnv) {
         return fromEnv.replace(/['"]/g, "").trim();
     }
-    // Dynamically target the host IP if accessed via local network
+    // Dynamically target the host IP or Cloud Run backend URL
     if (typeof window !== "undefined" && window.location) {
         const hostname = window.location.hostname;
-        if (hostname !== "localhost" && hostname !== "127.0.0.1" && !hostname.includes("example.com")) {
+
+        // 1. Cloud Run / Deployed Host dynamic domain routing (generic)
+        if (hostname.includes("frontend")) {
+            const backendHost = hostname.replace("frontend", "backend");
+            return `https://${backendHost}`;
+        }
+
+        // 2. Local network IP address mapping
+        const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+        if (isIp && hostname !== "127.0.0.1") {
             return `http://${hostname}:5000`;
         }
     }
     if (import.meta.env.DEV) {
         return "";
     }
-    return "http://localhost:5000";
+    // Do not use localhost in production builds
+    return "";
 };
 
 const settings = {

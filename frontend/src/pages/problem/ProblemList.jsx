@@ -19,7 +19,14 @@ function ProblemList() {
             const response = await getProblems();
             setProblems(response.problems || []);
         } catch (err) {
-            setError(err.response?.data?.message || err.message || "Failed to load problems");
+            const detail = JSON.stringify({
+                message: err.message,
+                code: err.code,
+                status: err.response?.status,
+                data: err.response?.data,
+                url: err.config?.url
+            }, null, 2);
+            setError(detail);
         } finally {
             setloading(false);
         }
@@ -46,7 +53,21 @@ function ProblemList() {
         return (
             <div style={{ padding: "2rem", textAlign: "center" }}>
                 <h2>Failed to load problems</h2>
-                <p style={{ color: "var(--text)", marginBottom: "1rem" }}>{error}</p>
+                <pre style={{
+                    textAlign: "left",
+                    maxWidth: "600px",
+                    margin: "1rem auto",
+                    padding: "1rem",
+                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                    color: "#ef4444",
+                    borderRadius: "6px",
+                    overflowX: "auto",
+                    whiteSpace: "pre-wrap",
+                    fontSize: "0.85rem",
+                    fontFamily: "monospace"
+                }}>
+                    {error}
+                </pre>
                 <button onClick={fetchProblems} style={{ padding: "0.6rem 1.2rem", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
                     Retry
                 </button>

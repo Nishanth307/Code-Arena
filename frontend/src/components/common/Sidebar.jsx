@@ -22,6 +22,7 @@ function Sidebar() {
 
     return (
         <aside
+            className="app-sidebar"
             style={{
                 width: "220px",
                 padding: "1.5rem 1rem",
@@ -53,11 +54,13 @@ function Sidebar() {
                         Contests
                     </Link>
                 </li>
-                <li>
-                    <Link to="/submissions" style={linkStyle("/submissions")}>
-                        Submissions
-                    </Link>
-                </li>
+                {user && (
+                    <li>
+                        <Link to="/submissions" style={linkStyle("/submissions")}>
+                            Submissions
+                        </Link>
+                    </li>
+                )}
                 <li>
                     <Link to="/leaderboard" style={linkStyle("/leaderboard")}>
                         Leaderboard

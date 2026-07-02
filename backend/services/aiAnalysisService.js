@@ -71,6 +71,9 @@ const analyzeComplexity = (code, language) => {
 };
 
 const analyzeSubmission = async (submissionId, code, language, verdict, problemDifficulty) => {
+    if (!code || code.trim() === "") {
+        return;
+    }
     const analysis = analyzeComplexity(code || "", language);
 
     if (verdict === "WRONG_ANSWER") {

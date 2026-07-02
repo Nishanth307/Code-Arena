@@ -44,7 +44,7 @@ function AppRoutes() {
             <Route path="/problems/create" element={<AdminRoute><CreateProblem /></AdminRoute>} />
             <Route path="/problems/edit/:id" element={<AdminRoute><EditProblem /></AdminRoute>} />
 
-            <Route path="/submissions" element={<SubmissionList />} />
+            <Route path="/submissions" element={<ProtectedRoute><SubmissionList /></ProtectedRoute>} />
             <Route path="/submissions/:id" element={<SubmissionDetails />} />
             <Route path="/submit/:id" element={<SubmitSolution />} />
 
