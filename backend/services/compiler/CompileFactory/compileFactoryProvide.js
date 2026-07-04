@@ -1,5 +1,6 @@
-const PythonCompilerFactory = require("./PythonFatcory");
+const PythonCompilerFactory = require("./PythonFactory");
 const CppCompilerFactory = require("./CppFactory");
+const JavascriptCompilerFactory = require("./JavascriptFactory");
 const ICompilerFactory = require("./ICompilerFactory");
 
 class CompilerFactoryProvider {
@@ -7,10 +8,11 @@ class CompilerFactoryProvider {
         const factories = {
             python: new PythonCompilerFactory(),
             cpp: new CppCompilerFactory(),
+            javascript: new JavascriptCompilerFactory(),
         }
 
         const factory = factories[language];
-        if (!factory) { 
+        if (!factory) {
             throw new Error(`unsupported language: ${language}`);
         }
         return factory;

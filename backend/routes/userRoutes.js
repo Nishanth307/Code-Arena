@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser, logoutUser } = require("../controller/authController");
+const { registerUser, loginUser, logoutUser, verifyEmail, sendVerificationEmail } = require("../controller/authController");
 const { updateProfile } = require("../controller/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { loginLimiter } = require("../middleware/rateLimiter");
@@ -27,5 +27,7 @@ router.put("/profile", authMiddleware, updateProfile);
 router.post("/register", registerUser);
 router.post("/login", loginLimiter, loginUser);
 router.post("/logout", logoutUser);
+router.post("/verify-email", verifyEmail);
+router.post("/send-verification-email", sendVerificationEmail);
 
 module.exports = router;

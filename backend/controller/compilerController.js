@@ -1,7 +1,7 @@
 const cleanupFile = require("../services/compiler/cleanupFile");
 const generateFile = require("../services/compiler/generateFile");
 const CompilerFactory = require("../services/compiler/CompileFactory/ICompilerFactory");
-const PythonCompilerFactory = require("../services/compiler/CompileFactory/PythonFatcory");
+const PythonCompilerFactory = require("../services/compiler/CompileFactory/PythonFactory");
 const CppCompilerFactory = require("../services/compiler/CompileFactory/CppFactory");
 const CompilerFactoryProvider = require("../services/compiler/CompileFactory/compileFactoryProvide");
 

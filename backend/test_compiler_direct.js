@@ -31,6 +31,20 @@ const testCases = [
         code: `#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    string name;\n    if (cin >> name) {\n        cout << "Hello, " << name << "!" << endl;\n    }\n    return 0;\n}`,
         input: "Antigravity",
         expected: "Hello, Antigravity!\n"
+    },
+    {
+        name: "JavaScript - Simple Output",
+        language: "javascript",
+        code: `console.log("Hello, World!");`,
+        input: "",
+        expected: "Hello, World!\n"
+    },
+    {
+        name: "JavaScript - Input Piping",
+        language: "javascript",
+        code: `const fs = require("fs");\nconst input = fs.readFileSync(0, "utf-8").trim();\nconsole.log("Hello, " + input + "!");`,
+        input: "Antigravity",
+        expected: "Hello, Antigravity!\n"
     }
 ];
 

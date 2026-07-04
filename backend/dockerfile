@@ -1,13 +1,13 @@
 # Stage 1: install deps with build tools
 FROM node:22.17.1-alpine AS deps
-RUN apk add --no-cache python3 build-base
+RUN apk add --no-cache python3 g++ build-base
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 
 # Stage 2: runtime image with Python and g++ for code execution
 FROM node:22.17.1-alpine
-RUN apk add --no-cache python3
+RUN apk add --no-cache python3 g++
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

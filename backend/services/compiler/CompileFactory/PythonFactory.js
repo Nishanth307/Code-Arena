@@ -1,10 +1,10 @@
 const PythonRunner = require("../runners/PythonRunner");
 const ICompilerFactory = require("./ICompilerFactory");
 
-class PythonFactory extends ICompilerFactory {
+class PythonCompilerFactory extends ICompilerFactory {
     async execute(filePath, input, options = {}) {
         return PythonRunner.execute(filePath, input, options);
     }
 }
 
-module.exports = PythonFactory;
+module.exports = PythonCompilerFactory;

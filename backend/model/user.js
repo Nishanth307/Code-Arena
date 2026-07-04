@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["USER", "ADMIN"],
         default: "USER"
+    },
+    emailVerified: {
+        type: Boolean,
+        default: false,
+        required: true,
     }
 })
 

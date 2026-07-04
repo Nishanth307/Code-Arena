@@ -76,6 +76,12 @@ const settings = {
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     FRONTEND_URL: process.env.FRONTEND_URL,
+    SMTP_HOST: process.env.SMTP_HOST || "localhost",
+    SMTP_PORT: parseInt(process.env.SMTP_PORT, 10) || 1025,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM: process.env.SMTP_FROM || "no-reply@onlinejudge.com",
+    IS_EMAIL_CONFIGURED: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
 };
 
 module.exports = settings;

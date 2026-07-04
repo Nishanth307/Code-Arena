@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../model/user");
 const settings = require("../config/settings");
+const crypto = require("crypto");
 
 const getUser = async (email) => {
     const userData = await User.findOne({ email: email.toLowerCase() })
@@ -41,11 +42,25 @@ const generateRefreshToken = async (payload) => {
     )
 }
 
+const generateEmailToken = () => {
+    return crypto.randomBytes(32).toString("hex");
+}
+
+const generateOTP = () => {
+    const digits = "0123456789";
+    let otp = "";
+    for (let i = 0; i < 6; i++) {
+        otp += digits[crypto.randomInt(0, 10)];
+    }
+    return otp;
+}
+
 module.exports = {
     getUser,
     hashPassword,
     validatePassword,
     validateToken,
     generateToken,
-    generateRefreshToken
+    generateRefreshToken,
+    generateOTP
 }
