@@ -12,6 +12,7 @@ const submissionRoute = require("./routes/submissionRoutes");
 const testCaseRoute = require("./routes/testCaseRoutes");
 const compilerRoute = require("./routes/compilerRoutes");
 const leaderboardRoute = require("./routes/leaderboardRoutes");
+const aiAnalysisRoute = require("./routes/aiAnalysisRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const { publicLimiter } = require("./middleware/rateLimiter");
 
@@ -78,6 +79,7 @@ app.use("/api/contest", contestRoute);
 app.use("/api/admin/contests", adminContestRoute);
 app.use("/api/contests", userContestRoute);
 app.use("/api/submission", submissionRoute);
+app.use("/api/submissions", aiAnalysisRoute);
 app.use("/api/testCase", testCaseRoute);
 app.use("/api/compiler", compilerRoute);
 app.use("/api/leaderboard", leaderboardRoute);

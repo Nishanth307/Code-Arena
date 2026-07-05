@@ -18,7 +18,13 @@ const resolveApiUrl = () => {
             return `https://${backendHost}/api`;
         }
 
-        // 2. Local network IP address mapping
+        // 2. Vercel & Production custom domain routing fallback
+        const isLocal = hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.");
+        if (!isLocal) {
+            return "https://online-judge-backend-969483836708.us-central1.run.app/api";
+        }
+
+        // 3. Local network IP address mapping
         const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
         if (isIp && hostname !== "127.0.0.1") {
             return `http://${hostname}:5000/api`;
@@ -28,8 +34,8 @@ const resolveApiUrl = () => {
     if (import.meta.env.DEV) {
         return "/api";
     }
-    // Do not use localhost in production builds
-    return "/api";
+    // Do not use localhost in production builds, default to Cloud Run backend
+    return "https://online-judge-backend-969483836708.us-central1.run.app/api";
 };
 
 const resolveBaseUrl = () => {
@@ -47,7 +53,13 @@ const resolveBaseUrl = () => {
             return `https://${backendHost}`;
         }
 
-        // 2. Local network IP address mapping
+        // 2. Vercel & Production custom domain routing fallback
+        const isLocal = hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.");
+        if (!isLocal) {
+            return "https://online-judge-backend-969483836708.us-central1.run.app";
+        }
+
+        // 3. Local network IP address mapping
         const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
         if (isIp && hostname !== "127.0.0.1") {
             return `http://${hostname}:5000`;
@@ -56,8 +68,8 @@ const resolveBaseUrl = () => {
     if (import.meta.env.DEV) {
         return "";
     }
-    // Do not use localhost in production builds
-    return "";
+    // Do not use localhost in production builds, default to Cloud Run backend
+    return "https://online-judge-backend-969483836708.us-central1.run.app";
 };
 
 const settings = {

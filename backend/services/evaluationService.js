@@ -6,7 +6,6 @@ const Problem = require("../model/problem");
 const TestCase = require("../model/testCase");
 const ContestSubmission = require("../model/contestSubmission");
 const storage = require("./storage");
-const { analyzeSubmission } = require("./aiAnalysisService");
 
 const mapRunError = (runErr) => {
     const msg = (runErr.message || String(runErr)).toLowerCase();
@@ -135,8 +134,6 @@ const evaluateSubmission = async (submissionId, language, code) => {
                 { score, verdict }
             );
         }
-
-        await analyzeSubmission(submissionId, code, language, verdict, problem.difficulty);
     } catch (error) {
         console.error(`Error processing submission ${submissionId}:`, error);
         try {
@@ -148,7 +145,6 @@ const evaluateSubmission = async (submissionId, language, code) => {
                 { submissionId },
                 { score: 0, verdict: "COMPILATION_ERROR" }
             );
-            await analyzeSubmission(submissionId, code, language, "COMPILATION_ERROR", "EASY");
         } catch (dbErr) {
             console.error("Failed to update submission error verdict in DB:", dbErr);
         }

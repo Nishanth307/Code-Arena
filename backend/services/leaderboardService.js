@@ -1,7 +1,7 @@
 const Submission = require("../model/submission");
 const Problem = require("../model/problem");
 const User = require("../model/user");
-const { DIFFICULTY_POINTS } = require("./aiAnalysisService");
+const DIFFICULTY_POINTS = { EASY: 10, MEDIUM: 30, HARD: 50 };
 
 const calculateUserStats = async (userId) => {
     const user = await User.findById(userId).select("-password");

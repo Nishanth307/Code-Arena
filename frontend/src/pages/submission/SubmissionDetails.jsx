@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getSubmissionById } from "../../api/submissionApi";
+import { getSubmissionById, generateAiAnalysis, getAiLimit } from "../../api/submissionApi";
 import AuthContext from "../../context/AuthContext";
 
 function SubmissionDetails() {
@@ -11,9 +11,27 @@ function SubmissionDetails() {
     const [error, setError] = useState("");
     const [polling, setPolling] = useState(false);
 
+    // Gemini states (strictly ephemeral, in-memory page state)
+    const [geminiAnalysis, setGeminiAnalysis] = useState(null);
+    const [limit, setLimit] = useState({ remaining: 2, limit: 2 });
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [aiError, setAiError] = useState("");
+
+    // Collapsible states
+    const [expanded, setExpanded] = useState({
+        strengths: true,
+        improvements: true,
+        potentialIssues: true,
+        interviewTip: true
+    });
+
+    const toggleSection = (section) => {
+        setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
+    };
+
     useEffect(() => {
         fetchSubmission();
-    }, [id]);
+    }, [id, user]);
 
     useEffect(() => {
         if (!submission || submission.verdict !== "PENDING") return;
@@ -27,6 +45,10 @@ function SubmissionDetails() {
                 if (response.submission?.verdict !== "PENDING") {
                     setPolling(false);
                     clearInterval(intervalId);
+                    
+                    if (user) {
+                        fetchGeminiDetails();
+                    }
                 }
             } catch {
                 // keep polling
@@ -34,15 +56,42 @@ function SubmissionDetails() {
         }, 800);
 
         return () => clearInterval(intervalId);
-    }, [submission?.verdict, id]);
+    }, [submission?.verdict, id, user]);
+
+    const fetchGeminiDetails = async () => {
+        try {
+            const limitRes = await getAiLimit(id);
+            setLimit({ remaining: limitRes.remaining, limit: limitRes.limit });
+        } catch (err) {
+            console.error("Failed to load Gemini limits", err);
+        }
+    };
 
     const fetchSubmission = async () => {
         try {
             const response = await getSubmissionById(id);
             setSubmission(response.submission);
             setAiAnalysis(response.aiAnalysis || null);
+            if (user) {
+                fetchGeminiDetails();
+            }
         } catch (err) {
             setError(err.response?.data?.message || err.message || "Failed to load submission");
+        }
+    };
+
+    const handleGenerateAnalysis = async () => {
+        setIsGenerating(true);
+        setAiError("");
+        try {
+            const response = await generateAiAnalysis(id);
+            setGeminiAnalysis(response.analysis);
+            const limitRes = await getAiLimit(id);
+            setLimit({ remaining: limitRes.remaining, limit: limitRes.limit });
+        } catch (err) {
+            setAiError(err.response?.data?.message || err.message || "Failed to generate AI analysis");
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -51,6 +100,23 @@ function SubmissionDetails() {
         if (verdict === "PENDING") return { color: "#856404", backgroundColor: "#fff3cd" };
         return { color: "#721c24", backgroundColor: "#f8d7da" };
     };
+
+    const getScoreColor = (score) => {
+        if (score >= 80) return "#22c55e"; // Green
+        if (score >= 50) return "#eab308"; // Yellow
+        return "#ef4444"; // Red
+    };
+
+    const getSectionHeaderStyle = () => ({
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0.75rem 1rem",
+        backgroundColor: "var(--bg-app)",
+        borderBottom: "1px solid var(--border)",
+        cursor: "pointer",
+        userSelect: "none"
+    });
 
     if (error) {
         return (
@@ -130,40 +196,188 @@ function SubmissionDetails() {
                 {submission.code || "Code not available"}
             </pre>
 
-            {aiAnalysis && submission.verdict !== "PENDING" && (
-                <div style={{ marginTop: "2rem", padding: "1.5rem", border: "1px solid var(--border)", borderRadius: "8px" }}>
-                    <h3>AI Code Analysis</h3>
-                    <div style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}>
-                        <p><strong>Time Complexity:</strong> {aiAnalysis.complexity?.time}</p>
-                        <p><strong>Space Complexity:</strong> {aiAnalysis.complexity?.space}</p>
-                        <p><strong>Code Quality:</strong> {aiAnalysis.codeQuality}</p>
-                        <p><strong>Coding Style:</strong> {aiAnalysis.codingStyle}</p>
-
-                        {aiAnalysis.issues?.length > 0 && (
-                            <div>
-                                <strong>Issues:</strong>
-                                <ul>{aiAnalysis.issues.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                            </div>
-                        )}
-                        {aiAnalysis.suggestions?.length > 0 && (
-                            <div>
-                                <strong>Suggestions:</strong>
-                                <ul>{aiAnalysis.suggestions.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                            </div>
-                        )}
-                        {aiAnalysis.potentialBugs?.length > 0 && (
-                            <div>
-                                <strong>Potential Bugs:</strong>
-                                <ul>{aiAnalysis.potentialBugs.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                            </div>
-                        )}
-                        {aiAnalysis.edgeCasesMissed?.length > 0 && (
-                            <div>
-                                <strong>Edge Cases:</strong>
-                                <ul>{aiAnalysis.edgeCasesMissed.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                            </div>
-                        )}
+            {/* Gemini AI analysis card */}
+            {user && submission.verdict !== "PENDING" && (
+                <div style={{
+                    marginTop: "2.5rem",
+                    padding: "1.5rem",
+                    border: "1px solid var(--border)",
+                    borderRadius: "12px",
+                    backgroundColor: "var(--bg)",
+                    boxShadow: "var(--shadow-md)"
+                }}>
+                    <div style={{ display: "flex", justifycontent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
+                        <div>
+                            <h2 style={{ fontSize: "1.5rem" }}>✨ AI Code Review</h2>
+                            <p style={{ margin: "0.25rem 0 0", fontSize: "0.875rem", color: "var(--text)" }}>
+                                AI Analysis Remaining Today: <strong>{limit.remaining}/{limit.limit}</strong>
+                            </p>
+                        </div>
+                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                            {limit.remaining === 0 && (
+                                <span style={{ color: "#ef4444", fontSize: "0.875rem", fontWeight: "bold" }}>
+                                    Daily AI Analysis limit reached.
+                                </span>
+                            )}
+                            <button
+                                onClick={handleGenerateAnalysis}
+                                disabled={isGenerating || limit.remaining === 0}
+                                style={{
+                                    padding: "0.6rem 1.2rem",
+                                    backgroundColor: isGenerating || limit.remaining === 0 ? "var(--border)" : "var(--accent)",
+                                    color: isGenerating || limit.remaining === 0 ? "var(--text)" : "#fff",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    fontWeight: "600",
+                                    cursor: isGenerating || limit.remaining === 0 ? "not-allowed" : "pointer",
+                                    transition: "background-color 0.2s"
+                                }}
+                            >
+                                {isGenerating ? "Generating AI Analysis..." : "Generate AI Analysis"}
+                            </button>
+                        </div>
                     </div>
+
+                    {aiError && (
+                        <div style={{ padding: "0.75rem 1rem", backgroundColor: "#f8d7da", color: "#721c24", borderRadius: "6px", marginBottom: "1rem" }}>
+                            {aiError}
+                        </div>
+                    )}
+
+                    {geminiAnalysis ? (
+                        <div style={{ display: "grid", gap: "1.25rem" }}>
+                            {/* Score Card */}
+                            <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "1.5rem",
+                                padding: "1.25rem",
+                                borderRadius: "8px",
+                                border: "1px solid var(--border)",
+                                backgroundColor: "var(--bg-app)"
+                            }}>
+                                <div style={{
+                                    width: "64px",
+                                    height: "64px",
+                                    borderRadius: "50%",
+                                    border: `4px solid ${getScoreColor(geminiAnalysis.overallScore)}`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "bold",
+                                    color: getScoreColor(geminiAnalysis.overallScore)
+                                }}>
+                                    {geminiAnalysis.overallScore}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: "flex", alignItems: "center" }}>
+                                        <h3 style={{ margin: 0 }}>Overall Review</h3>
+                                        {geminiAnalysis.optimal && (
+                                            <span style={{
+                                                border: "1px solid #22c55e",
+                                                color: "#22c55e",
+                                                backgroundColor: "rgba(34, 197, 94, 0.1)",
+                                                padding: "0.15rem 0.5rem",
+                                                borderRadius: "4px",
+                                                marginLeft: "0.75rem",
+                                                fontSize: "0.75rem",
+                                                fontWeight: "bold",
+                                                textTransform: "uppercase"
+                                            }}>
+                                                Optimal
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p style={{ margin: "0.25rem 0 0", fontSize: "0.95rem", color: "var(--text)" }}>{geminiAnalysis.summary}</p>
+                                </div>
+                            </div>
+
+                            {/* Complexity Badges */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                                <div style={{ padding: "1rem", border: "1px solid var(--border)", borderRadius: "8px" }}>
+                                    <h4 style={{ fontSize: "0.875rem", color: "var(--text)", textTransform: "uppercase" }}>Time Complexity</h4>
+                                    <code style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--accent)" }}>{geminiAnalysis.complexity?.time}</code>
+                                </div>
+                                <div style={{ padding: "1rem", border: "1px solid var(--border)", borderRadius: "8px" }}>
+                                    <h4 style={{ fontSize: "0.875rem", color: "var(--text)", textTransform: "uppercase" }}>Space Complexity</h4>
+                                    <code style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--accent)" }}>{geminiAnalysis.complexity?.space}</code>
+                                </div>
+                            </div>
+
+                            {/* Section: Strengths */}
+                            {geminiAnalysis.strengths?.length > 0 && (
+                                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                                    <div onClick={() => toggleSection("strengths")} style={getSectionHeaderStyle()}>
+                                        <h3>👍 Key Strengths</h3>
+                                        <span>{expanded.strengths ? "▲" : "▼"}</span>
+                                    </div>
+                                    {expanded.strengths && (
+                                        <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", backgroundColor: "var(--bg)" }}>
+                                            <ul style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--text)" }}>
+                                                {geminiAnalysis.strengths.map((s, idx) => <li key={idx} style={{ marginBottom: "0.25rem" }}>{s}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Section: Improvements */}
+                            {geminiAnalysis.improvements?.length > 0 && (
+                                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                                    <div onClick={() => toggleSection("improvements")} style={getSectionHeaderStyle()}>
+                                        <h3>🚀 Recommended Improvements</h3>
+                                        <span>{expanded.improvements ? "▲" : "▼"}</span>
+                                    </div>
+                                    {expanded.improvements && (
+                                        <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", backgroundColor: "var(--bg)" }}>
+                                            <ul style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--text)" }}>
+                                                {geminiAnalysis.improvements.map((s, idx) => <li key={idx} style={{ marginBottom: "0.25rem" }}>{s}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Section: Potential Issues */}
+                            {geminiAnalysis.potentialIssues?.length > 0 && (
+                                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                                    <div onClick={() => toggleSection("potentialIssues")} style={getSectionHeaderStyle()}>
+                                        <h3>🔍 Potential Issues</h3>
+                                        <span>{expanded.potentialIssues ? "▲" : "▼"}</span>
+                                    </div>
+                                    {expanded.potentialIssues && (
+                                        <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", backgroundColor: "var(--bg)" }}>
+                                            <ul style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--text)" }}>
+                                                {geminiAnalysis.potentialIssues.map((b, idx) => <li key={idx} style={{ marginBottom: "0.25rem" }}>{b}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Section: Interview Tip */}
+                            {geminiAnalysis.interviewTip && (
+                                <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                                    <div onClick={() => toggleSection("interviewTip")} style={getSectionHeaderStyle()}>
+                                        <h3>🎤 Interview Tip</h3>
+                                        <span>{expanded.interviewTip ? "▲" : "▼"}</span>
+                                    </div>
+                                    {expanded.interviewTip && (
+                                        <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", backgroundColor: "var(--bg)" }}>
+                                            <p style={{ margin: 0, whiteSpace: "pre-line", color: "var(--text)" }}>{geminiAnalysis.interviewTip}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ padding: "2rem", textAlign: "center", border: "1px dashed var(--border)", borderRadius: "8px", backgroundColor: "var(--bg-app)" }}>
+                            <p style={{ margin: 0, color: "var(--text)" }}>
+                                Get a quick AI review of your solution. Get complexity metrics, strengths, improvements, potential issues, and interview tips in under 30 seconds.
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
