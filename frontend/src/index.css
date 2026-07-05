@@ -194,11 +194,13 @@ code {
     flex-direction: column !important;
   }
   .app-sidebar {
-    width: 100% !important;
-    min-height: auto !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--border) !important;
-    padding: 1rem !important;
+    display: none !important;
+  }
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+  .mobile-drawer {
+    display: block !important;
   }
   .auth-container {
     margin: 2rem 1rem !important;

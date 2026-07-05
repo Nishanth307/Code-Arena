@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import AuthContext from "../../context/AuthContext";
 
 function Navbar() {
     const { user, logout } = useContext(AuthContext);
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <nav
@@ -69,7 +70,88 @@ function Navbar() {
                         </Link>
                     </div>
                 )}
+
+                {/* Mobile Menu Toggle Button */}
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="mobile-menu-toggle"
+                    style={{
+                        display: "none", // Hidden on desktop
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        width: "22px",
+                        height: "16px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        boxSizing: "border-box"
+                    }}
+                >
+                    <span style={{ width: "22px", height: "2px", backgroundColor: "var(--text-h)", borderRadius: "2px" }} />
+                    <span style={{ width: "22px", height: "2px", backgroundColor: "var(--text-h)", borderRadius: "2px" }} />
+                    <span style={{ width: "22px", height: "2px", backgroundColor: "var(--text-h)", borderRadius: "2px" }} />
+                </button>
             </div>
+
+            {/* Mobile Drawer Overlay */}
+            {isOpen && (
+                <div 
+                    className="mobile-drawer"
+                    style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        backgroundColor: "var(--bg)",
+                        borderBottom: "1px solid var(--border)",
+                        padding: "1rem 2rem",
+                        display: "none", // overridden in media query on mobile
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        zIndex: 99
+                    }}
+                >
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                        {user && (
+                            <li>
+                                <Link to="/dashboard" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Dashboard</Link>
+                            </li>
+                        )}
+                        <li>
+                            <Link to="/problems" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Problems</Link>
+                        </li>
+                        <li>
+                            <Link to="/contests" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Contests</Link>
+                        </li>
+                        {user && (
+                            <li>
+                                <Link to="/submissions" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Submissions</Link>
+                            </li>
+                        )}
+                        <li>
+                            <Link to="/leaderboard" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Leaderboard</Link>
+                        </li>
+                        {user && (
+                            <li>
+                                <Link to="/profile" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "var(--text)", fontWeight: "600" }}>Profile</Link>
+                            </li>
+                        )}
+                        {user?.role === "ADMIN" && (
+                            <>
+                                <li style={{ borderTop: "1px solid var(--border)", paddingTop: "0.5rem", marginTop: "0.5rem" }}>
+                                    <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#dc3545", textTransform: "uppercase" }}>Admin Panel</span>
+                                </li>
+                                <li>
+                                    <Link to="/problems/create" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "#dc3545", fontWeight: "600" }}>+ Create Problem</Link>
+                                </li>
+                                <li>
+                                    <Link to="/contests/create" onClick={() => setIsOpen(false)} style={{ textDecoration: "none", color: "#dc3545", fontWeight: "600" }}>+ Create Contest</Link>
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                </div>
+            )}
         </nav>
     );
 }

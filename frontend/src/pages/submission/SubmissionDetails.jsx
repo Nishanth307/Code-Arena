@@ -43,6 +43,9 @@ function SubmissionDetails() {
                 const response = await getSubmissionById(id);
                 setSubmission(response.submission);
                 setAiAnalysis(response.aiAnalysis || null);
+                if (response.aiAnalysis) {
+                    setGeminiAnalysis(response.aiAnalysis);
+                }
                 if (response.submission?.verdict !== "PENDING") {
                     setPolling(false);
                     clearInterval(intervalId);
@@ -73,6 +76,9 @@ function SubmissionDetails() {
             const response = await getSubmissionById(id);
             setSubmission(response.submission);
             setAiAnalysis(response.aiAnalysis || null);
+            if (response.aiAnalysis) {
+                setGeminiAnalysis(response.aiAnalysis);
+            }
             if (user) {
                 fetchGeminiDetails();
             }
@@ -385,13 +391,6 @@ function SubmissionDetails() {
             <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
                 <Link to="/leaderboard" style={{ color: "#007bff", fontWeight: "600" }}>View Leaderboard</Link>
                 <Link to={`/problems/${submission.problemId?._id || submission.problemId}`} style={{ color: "#007bff", fontWeight: "600" }}>Back to Problem</Link>
-            </div>
-
-            {/* Debug Info */}
-            <div style={{ marginTop: "3rem", fontSize: "0.8rem", color: "#888", borderTop: "1px dashed var(--border)", paddingTop: "1rem" }}>
-                <p style={{ margin: 0 }}>
-                    <strong>Debug Info:</strong> API URL: <code>{settings.VITE_API_URL}</code> | Base URL: <code>{settings.BASE_URL}</code> | Auth Loading: <code>{authLoading ? "true" : "false"}</code> | Logged In User: <code>{user ? `${user.username || user.firstName} (${user.role})` : "null"}</code>
-                </p>
             </div>
         </div>
     );
