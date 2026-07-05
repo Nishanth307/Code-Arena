@@ -2,10 +2,11 @@ import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSubmissionById, generateAiAnalysis, getAiLimit } from "../../api/submissionApi";
 import AuthContext from "../../context/AuthContext";
+import settings from "../../config/settings";
 
 function SubmissionDetails() {
     const { id } = useParams();
-    const { user } = useContext(AuthContext);
+    const { user, loading: authLoading } = useContext(AuthContext);
     const [submission, setSubmission] = useState(null);
     const [aiAnalysis, setAiAnalysis] = useState(null);
     const [error, setError] = useState("");
@@ -384,6 +385,13 @@ function SubmissionDetails() {
             <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
                 <Link to="/leaderboard" style={{ color: "#007bff", fontWeight: "600" }}>View Leaderboard</Link>
                 <Link to={`/problems/${submission.problemId?._id || submission.problemId}`} style={{ color: "#007bff", fontWeight: "600" }}>Back to Problem</Link>
+            </div>
+
+            {/* Debug Info */}
+            <div style={{ marginTop: "3rem", fontSize: "0.8rem", color: "#888", borderTop: "1px dashed var(--border)", paddingTop: "1rem" }}>
+                <p style={{ margin: 0 }}>
+                    <strong>Debug Info:</strong> API URL: <code>{settings.VITE_API_URL}</code> | Base URL: <code>{settings.BASE_URL}</code> | Auth Loading: <code>{authLoading ? "true" : "false"}</code> | Logged In User: <code>{user ? `${user.username || user.firstName} (${user.role})` : "null"}</code>
+                </p>
             </div>
         </div>
     );
